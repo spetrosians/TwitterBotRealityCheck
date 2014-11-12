@@ -182,26 +182,24 @@ def textFileForCeleb(name):
 
 
 name_list=['katy perry',
-'roberto cholvin'
 'britney spears',
 'taylor swift',
 'kim kardashian',
 'justin bieber',
 'justin timberlake',
- 'chris brown',
- 'nicki minaj',
- 'lady gaga',
- 'miley cyrus',
- 'selena gomez',
- 'rihanna',
- 'beyonce',
- 'ashton kutcher',
- 'ellen gegeneres',
- 'cristian oronaldo',
- 'oprah winfrey',
- 'jennifer lopez',
-'shakira',
-'robert cholvin']
+'chris brown',
+'nicki minaj',
+'lady gaga',
+'miley cyrus',
+'selena gomez',
+'rihanna',
+'beyonce',
+'ashton kutcher',
+'ellen degeneres',
+'cristian ronaldo',
+'oprah winfrey',
+'jennifer lopez',
+'shakira']
 
 
 
