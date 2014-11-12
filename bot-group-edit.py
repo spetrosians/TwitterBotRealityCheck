@@ -198,6 +198,7 @@ name_list=['katy perry',
 'ellen degeneres',
 'cristian ronaldo',
 'oprah winfrey',
+'test name',
 'jennifer lopez',
 'shakira']
 
