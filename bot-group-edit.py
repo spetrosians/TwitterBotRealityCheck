@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 
 import os
 import sys
@@ -201,7 +199,8 @@ name_list=['katy perry',
  'cristian oronaldo',
  'oprah winfrey',
  'jennifer lopez',
- 'shakira']
+'shakira',
+'robert cholvin']
 
 
 
