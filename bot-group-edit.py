@@ -182,6 +182,7 @@ def textFileForCeleb(name):
 
 
 name_list=['katy perry',
+'roberto cholvin'
 'britney spears',
 'taylor swift',
 'kim kardashian',
