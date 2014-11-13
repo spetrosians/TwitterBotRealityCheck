@@ -243,7 +243,7 @@ if __name__ == "__main__":
                     if len(reply)>140: #in case message is more than 140 characters
                         reply=reply[:140]
                     print "[+] Replying " , reply 
-                    _id=531012911473258497 #would need to comment out once we have a real message
+                    _id=532776071381262336 #would need to comment out once we have a real message
                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                    
                 #===================================                 
