@@ -21,10 +21,10 @@ from httplib import BadStatusLine
 # empty string values that are defined as placeholders.
     
 def oauth_login():
-    CONSUMER_KEY = 'iGFnHJwgej7ugfxPo2QMGyzSp'
-    CONSUMER_SECRET ='iOks9ZB9BTrjPNHscVOI6Ys2LXCOOl6u4TX8RzxIigmnP1QHZT'
+    CONSUMER_KEY = 'Q7KQHynEeJwEvUrKnHjRUvFBA'
+    CONSUMER_SECRET ='WdO5H4NV78bUApxT7tajxr9p7YtQUVWAtkUzIooCq1LdlNurbd'
     OAUTH_TOKEN = '2878685726-7GgrQM3HrFclEu62j6OnoZ3LlgtadoufymOqZ50'
-    OAUTH_TOKEN_SECRET = ' rFF2cokPmpg6SuDH9zd7Jy970tTf01UXwTjCrtPCrzpDS'
+    OAUTH_TOKEN_SECRET =  'rFF2cokPmpg6SuDH9zd7Jy970tTf01UXwTjCrtPCrzpDS'
     auth = twitter.oauth.OAuth(OAUTH_TOKEN, OAUTH_TOKEN_SECRET,
                                CONSUMER_KEY, CONSUMER_SECRET)
     
@@ -211,7 +211,7 @@ if __name__ == "__main__":
     last_id=None
 
     bot = oauth_login()
-    bot_name = '@'+bot.account.verify_credentials()['screen_name'] #put your actual bot's name here
+    bot_name ='@'+bot.account.verify_credentials()['screen_name'] #put your actual bot's name here
     print bot_name
     bot_id_GRC=2880116101 #gina's bot
     bot_id= 2878685726 #GetRealCeleb bot
@@ -221,7 +221,7 @@ if __name__ == "__main__":
     #main loop. Just keep searching anyone talking to us
     while True:
         try:
-            id_list_str=get_id_str_list(name_list[:12], collection, limit=3)
+            id_list_str=get_id_str_list(name_list[:12], collection, limit=1)
             print id_list_str
             for id_str in id_list_str:
                 try:
