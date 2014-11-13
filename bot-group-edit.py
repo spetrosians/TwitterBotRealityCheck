@@ -21,10 +21,10 @@ from httplib import BadStatusLine
 # empty string values that are defined as placeholders.
     
 def oauth_login():
-    CONSUMER_KEY = '0lJsvdGOaFrnLeRfNMtbiqI8o'
-    CONSUMER_SECRET ='3UJwpgbNRpYFzvpj9GVyMWJIYdQzxzqfyslsuwre0naCHVS7AW'
-    OAUTH_TOKEN = '2880116101-qyhIBwI5ogbRcD3wUdYf2wWSBL97jqKgWo8zFBD'
-    OAUTH_TOKEN_SECRET = 'dzf41CNJh9lLtDjvGsXaWfN1rBjPgJcwa1vpXUqkA3PN7'
+    CONSUMER_KEY = 'iGFnHJwgej7ugfxPo2QMGyzSp'
+    CONSUMER_SECRET ='iOks9ZB9BTrjPNHscVOI6Ys2LXCOOl6u4TX8RzxIigmnP1QHZT'
+    OAUTH_TOKEN = '2878685726-7GgrQM3HrFclEu62j6OnoZ3LlgtadoufymOqZ50'
+    OAUTH_TOKEN_SECRET = ' rFF2cokPmpg6SuDH9zd7Jy970tTf01UXwTjCrtPCrzpDS'
     auth = twitter.oauth.OAuth(OAUTH_TOKEN, OAUTH_TOKEN_SECRET,
                                CONSUMER_KEY, CONSUMER_SECRET)
     
@@ -213,8 +213,8 @@ if __name__ == "__main__":
     bot = oauth_login()
     bot_name = '@'+bot.account.verify_credentials()['screen_name'] #put your actual bot's name here
     print bot_name
-    bot_id=2880116101 #gina's bot
-    bot_id_GRC= 2878685726 #GetRealCeleb bot
+    bot_id_GRC=2880116101 #gina's bot
+    bot_id= 2878685726 #GetRealCeleb bot
     #bot_id=bot.account.verify_credentials()['id']
     print bot_id
     
