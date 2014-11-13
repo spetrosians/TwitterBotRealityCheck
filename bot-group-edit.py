@@ -238,12 +238,12 @@ if __name__ == "__main__":
                     speaker = mention['user']['screen_name']
                     _id=mention['id']
                     print "[+] " + speaker + " is saying " + message
-                    reply = '@GetRealCeleb get on earth(c) ' +speaker
+                    reply = '@color_blind_if  get on earth(c) ' +speaker
                     #reply = 'get on earth(c) ' +speaker+' forget '+ message
                     if len(reply)>140: #in case message is more than 140 characters
                         reply=reply[:140]
                     print "[+] Replying " , reply 
-                    _id=532776071381262336 #would need to comment out once we have a real message
+                    _id=532812179049676800 #would need to comment out once we have a real message
                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                    
                 #===================================                 
@@ -272,13 +272,17 @@ if __name__ == "__main__":
                             print "[+] Replying " , reply
                             make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                            
+                                        
+                    sleep_int = 60 #downtime interval in seconds
+                    print "Sleeping...\n"
+                    time.sleep(sleep_int)
+
                 except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
                         print e
-                    
-                    
-                sleep_int = 60 #downtime interval in seconds
-                print "Sleeping...\n"
-                time.sleep(sleep_int)
+                        sleep_int = 60 #downtime interval in seconds
+                        print "Sleeping...\n"
+                        time.sleep(sleep_int)
+
         
 
             
