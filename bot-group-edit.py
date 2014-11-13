@@ -14,7 +14,7 @@ from twitter.oauth_dance import oauth_dance
 from urllib2 import URLError
 from httplib import BadStatusLine
 
-#import any other natual processing libs
+#import any other natural processing libs
 
 
 # go to http://twitter.com/apps/new to create an app and get values
@@ -22,10 +22,10 @@ from httplib import BadStatusLine
 # empty string values that are defined as placeholders.
     
 def oauth_login():
-    CONSUMER_KEY = '0lJsvdGOaFrnLeRfNMtbiqI8o'
-    CONSUMER_SECRET ='3UJwpgbNRpYFzvpj9GVyMWJIYdQzxzqfyslsuwre0naCHVS7AW'
-    OAUTH_TOKEN = '2880116101-qyhIBwI5ogbRcD3wUdYf2wWSBL97jqKgWo8zFBD'
-    OAUTH_TOKEN_SECRET = 'dzf41CNJh9lLtDjvGsXaWfN1rBjPgJcwa1vpXUqkA3PN7'
+    CONSUMER_KEY = 'iGFnHJwgej7ugfxPo2QMGyzSp'
+    CONSUMER_SECRET ='iOks9ZB9BTrjPNHscVOI6Ys2LXCOOl6u4TX8RzxIigmnP1QHZT'
+    OAUTH_TOKEN = '2878685726-7GgrQM3HrFclEu62j6OnoZ3LlgtadoufymOqZ50'
+    OAUTH_TOKEN_SECRET = 'rFF2cokPmpg6SuDH9zd7Jy970tTf01UXwTjCrtPCrzpDS'
     auth = twitter.oauth.OAuth(OAUTH_TOKEN, OAUTH_TOKEN_SECRET,
                                CONSUMER_KEY, CONSUMER_SECRET)
     
@@ -214,8 +214,8 @@ if __name__ == "__main__":
     bot = oauth_login()
     bot_name = '@'+bot.account.verify_credentials()['screen_name'] #put your actual bot's name here
     print bot_name
-    bot_id=2880116101 #gina's bot
-    bot_id_GRC= 2878685726 #GetRealCeleb bot
+    bot_id_GRC=2880116101 #gina's bot
+    bot_id = 2878685726 #GetRealCeleb bot
     #bot_id=bot.account.verify_credentials()['id']
     print bot_id
     
@@ -234,10 +234,10 @@ if __name__ == "__main__":
                     
                     # reply to one of the users pulled out from DB
                    #======================================================== 
-                    mention=make_twitter_request(bot.statuses.show,_id=int(id_str))
+                    mention = make_twitter_request(bot.statuses.show,_id=int(id_str))
                     message = mention['text']
                     speaker = mention['user']['screen_name']
-                    _id=mention['id']
+                    _id = mention['id']
                     print "[+] " + speaker + " is saying " + message
                     reply = '@GetRealCeleb get on earth(c) ' +speaker
                     #reply = 'get on earth(c) ' +speaker+' forget '+ message
@@ -245,7 +245,7 @@ if __name__ == "__main__":
                         reply=reply[:140]
                     print "[+] Replying " , reply 
                     _id=531012911473258497 #would need to comment out once we have a real message
-                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                    make_twitter_request(bot.statuses.update, status=reply, in_reply_to_status_id=_id)
                    
                #===================================                 
                 
@@ -260,7 +260,7 @@ if __name__ == "__main__":
                     if not mentions:
                         print "No one talking to us now...", time.ctime()
                 
-                    mentions=[mentions[(len(mentions)-i-1)] for i in xrange(len(mentions))] #reverse the list
+                    mentions = [mentions[(len(mentions)-i-1)] for i in xrange(len(mentions))] #reverse the list
             
                     for mention in mentions: 
                         if mention['id'] > last_id and mention['user']['id']!=bot_id: #does not respond to itself
