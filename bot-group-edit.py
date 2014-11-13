@@ -1,4 +1,3 @@
-
 import os
 import sys
 import time
@@ -247,9 +246,7 @@ if __name__ == "__main__":
                     _id=531012911473258497 #would need to comment out once we have a real message
                     make_twitter_request(bot.statuses.update, status=reply, in_reply_to_status_id=_id)
                    
-               #===================================                 
-                
-                
+                #===================================                 
                 #then respond to all the mentions (based on the last reply)
                 #===========================================
                     if last_id!=None:
