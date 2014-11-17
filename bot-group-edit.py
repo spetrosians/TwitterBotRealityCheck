@@ -198,7 +198,7 @@ name_list=['ashton kutcher',
 'rihanna',
 'selena gomez',
 'shakira'
-'taylor swift',]
+'taylor swift']
 
 
 
