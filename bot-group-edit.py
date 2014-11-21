@@ -1,3 +1,5 @@
+from celeb_word_list import *
+from aux_func import *
 import os
 import sys
 import time
@@ -107,8 +109,8 @@ def response(message):
     return message
 
 
-def get_id_str_list(name_list, collection, limit=10):
-    to_respond=[searchMongo(name, collection, limit) for name in name_list]
+def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
+    to_respond=[searchMongo(name,celeb_word_list[name], collection, limit) for name in name_list]
     print to_respond
     id_str_list=[tweet['id_str'] for name in to_respond for tweet in name]
     return id_str_list
@@ -125,7 +127,7 @@ def connectMongo():
 
 
 
-def searchMongo(name,collection, limit=10):
+def searchMongo(name,word_list,collection, limit=10):
     name=name.split(' ')
     if(len(name)>1):
         first=name[0]
@@ -133,72 +135,29 @@ def searchMongo(name,collection, limit=10):
     else:
         first=name[0]
         last=''
-    line1=r'love.*'+first+' ?'+last
-    line2=first+' ?'+last+r'.*love'
-    re_exp=re.compile(r'('+line1+r')|('+line2+r')', re.IGNORECASE)
+        
+    yes_line=r'({word}.*{first}\s?{last})|({first}\s?{last}.*{word})'
+    yes_list=[ re.compile(yes_line.format(first=first, last=last, word=word), re.I)
+                        for word in word_list['yes']] 
+                        
+    no_list=[ re.compile(word, re.I)
+                        for word in word_list['no']] 
     
-    query={'$and':
-              [ {'text':re_exp},
-                {'text':{'$not':re.compile(r'^.?@'+first+last, re.IGNORECASE)}}]
-        }
+   # line1=r'love.*'+first+' ?'+last
+    #line2=first+' ?'+last+r'.*love'
+    #re_exp=re.compile(r'('+line1+r')|('+line2+r')', re.IGNORECASE)
+    
+    #query={'$and':
+     #         [ {'text':re_exp},
+      #          {'text':{'$not':re.compile(r'^.?@'+first+last, re.IGNORECASE)}}]
+       # }
+        
+    query={'text':{'$in':yes_list, '$nin':no_list}}
     
     return list(collection.find(query).limit(limit))
 
 #bot=oauth_login()
-def deletePosts(bot): #mass delete the posts
-    
-    statuses=bot.statuses.user_timeline()
-    print len(statuses)
-    for status in statuses:
-        try:
-            print 'deleting ', status['id']
-            bot.statuses.destroy(id=status['id'])
-        except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
-                        print e
-
-def textFileForCeleb(name):
-    import pymongo
-    import re
-    name=name.split(' ')
-    if(len(name)>1):
-        first=name[0]
-        last=name[1]
-    else:
-        first=name[0]
-        last=''
-    
-    conn=pymongo.MongoClient()['twitter']['lines']
-    result=conn.find({'text':{'$regex':first+r'.?'+last, '$options':'is'}})
-    text_r=[line['text'].strip() for line in list(result)]
-    with open(first+'_'+last+'.txt', 'w') as f:
-        for line in text_r:
-               f.write(line+'\n')
-            
-
-
-
-
-
-
-name_list=['ashton kutcher',
-'beyonce',
-'britney spears',
-'chris brown',
-'cristiano ronaldo',
-'ellen degeneres',
-'jennifer lopez',
-'justin bieber',
-'justin timberlake',
-'katy perry',
-'kim kardashian',
-'lady gaga',
-'miley cyrus',
-'nicki minaj',
-'oprah winfrey',
-'rihanna',
-'selena gomez',
-'shakira'
-'taylor swift']
+          
 
 
 
