@@ -104,21 +104,36 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 
 # all of your project code can be wrapped inside of this function
 # right now response just parrots the message back at the sender
+	
+def response(celeb, link, user, miniTeaser, teaser, title):
+	response_good = false
+	while not response_good:
+		if len(miniTeaser)>0:
+			message = miniTeaser
+		else:
+			message = teaser
 
-
-
-def response(celeb, message, link, user):
-    response = []
-    response.append(celeb + "'s latest article: " + message + ' ' + link)
-    response.append('Did you know ' + celeb + 'is concerned about this? ' + message + ' ' + link)
-    response.append(celebe + " has a new guilty pleasure: " + message + ' ' + link)
-    response.append("Want to know what's more popular than " + celeb + '?\n' + message + ' ' + link)
-    response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
-    response.append("Hey @" + user + ', take aa break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
-    response.append("@" + user + ' + ' celebe + ' = ' message + ' ' + link)
-    response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
-    i = randint(0,7) #inclusive
-    return response[i]
+		response = []
+		response.append(celeb + "'s latest article: " + message + ' ' + link)
+		response.append('Did you know ' + celeb + ' is concerned about this? ' + message + ' ' + link)
+		response.append(celeb + " has a new guilty pleasure: " + message + ' ' + link)
+		response.append("Want to know what's more popular than " + celeb + '?\n' + message + ' ' + link)
+		response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
+		response.append("Hey @" + user + ', take a break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
+		response.append("@" + user + ' + ' celebe + ' = ' message + ' ' + link)
+		response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
+		i = randint(0,7) #inclusive
+		response = response[i]
+		if message == title:
+			response = "I don't care about " + celeb
+			response_good = true
+		if len(response) < 140:
+			response_good = true
+		else:
+			message = title
+		
+		
+    return response
 
 
 def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
