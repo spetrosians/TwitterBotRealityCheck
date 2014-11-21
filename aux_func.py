@@ -1,6 +1,9 @@
+import exceptions
+import pymongo
+import re
+
 def textFileForCeleb(name, limit):
-    import pymongo
-    import re
+
     name=name.split(' ')
     if(len(name)>1):
         first=name[0]
