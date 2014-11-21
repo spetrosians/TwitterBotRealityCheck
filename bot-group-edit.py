@@ -14,7 +14,6 @@ from twitter.oauth import OAuth, write_token_file , read_token_file
 from twitter.oauth_dance import oauth_dance
 from urllib2 import URLError
 from httplib import BadStatusLine
-from random import randint
 
 #import any other natual processing libs
 
@@ -106,33 +105,36 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 # right now response just parrots the message back at the sender
 
 	
+from random import randint
 def response(celeb, link, user, miniTeaser, teaser, title):
-	response_good = False
-	while not response_good:
-		if len(miniTeaser)>0:
-			message = miniTeaser
-		else:
-			message = teaser
+    
+    if len(miniTeaser)>0:
+        message = miniTeaser 
+    else:
+        message = teaser
+    response_good = False
+    
+    while not response_good:
 
-		response = []
-		response.append(celeb + "'s latest article: " + message + ' ' + link)
-		response.append('Did you know ' + celeb + ' is concerned about this? ' + message + ' ' + link)
-		response.append(celeb + " has a new guilty pleasure: " + message + ' ' + link)
-		response.append("Want to know what's more popular than " + celeb + '?\n' + message + ' ' + link)
-		response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
-		response.append("Hey @" + user + ', take a break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
-		response.append("@" + user + ' + ' +celeb + ' = '+ message + ' ' + link)
-		response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
-		i = randint(0,7) #inclusive
-		response = response[i]
-		if message == title:
-			response = "I don't care about " + celeb
-			response_good = True
-		if len(response) < 140:
-			response_good = True
-		else:
-			message = title	
+        response = []
+        response.append(celeb + "'s latest article: " + message + ' ' + link)
+        response.append(celeb + ' is concerned about this: ' + message + ' ' + link)
+        response.append(celeb + " has a new guilty pleasure: " + message + ' ' + link)
+        response.append("This is more popular than " + celeb + '?\n' + message + ' ' + link)
+        response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
+        response.append("@" + user + ' + ' +celeb + ' = '+ message + ' ' + link)
+        response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
+        i = randint(0,7) #inclusive
+        response = response[i]
+        if message == title:
+            response = "Check this out: " + link
+            response_good = True
+        if len(response) < 140-len(link)+20:
+            response_good = True
+        else:
+            message = title
     return response
+
 
 
 
