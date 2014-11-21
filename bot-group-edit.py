@@ -134,6 +134,9 @@ def response(celeb, link, user, miniTeaser, teaser, title):
 			message = title	
     return response
 
+
+
+
 def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
     to_respond=[searchMongo(name,celeb_word_list[name], collection, limit) for name in name_list]
     print to_respond
@@ -176,7 +179,8 @@ def searchMongo(name,word_list,collection, limit=10):
 
 
 if __name__ == "__main__":
-    
+    from datetime import datetime
+    user_ids={'date':datetime.utcnow(), 'id_list':[]}
     conn=connectMongo()
     db=conn.twitter
     collection=db.lines
@@ -193,6 +197,10 @@ if __name__ == "__main__":
     
     #main loop. Just keep searching anyone talking to us
     while True:
+        if (user_ids['date']-datetime.utcnow()).days>=1:
+            user_ids['date']=datetime.utcnow()
+            user_ids['id_list']=[]
+        
         try:
             id_list_str=get_id_str_list(name_list[:12], collection, limit=1)
             print id_list_str
@@ -207,6 +215,10 @@ if __name__ == "__main__":
                     # reply to one of the users pulled out from DB
                    #======================================================== 
                     mention=make_twitter_request(bot.statuses.show,_id=int(id_str))
+                    if mention['user']['id'] not in user_ids['id_list']: #check if the user has been responded to in the past 24 hours
+                        user_ids['id_list'].append(mention['user']['id'])
+                    else:
+                        continue
                     message = mention['text']
                     speaker = mention['user']['screen_name']
                     _id=mention['id']
@@ -261,6 +273,9 @@ if __name__ == "__main__":
             
         except KeyboardInterrupt:
                 print"[!] Cleaning up. last_id was ", last_id
+                with open('responded_list.txt','w') as f:
+                    f.write(user_ids['date'].strftime('%x %X'))
+                    f.writelines(user_ids['id_list'])
                 sys.exit()
 
 
