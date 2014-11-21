@@ -12,6 +12,7 @@ from twitter.oauth import OAuth, write_token_file , read_token_file
 from twitter.oauth_dance import oauth_dance
 from urllib2 import URLError
 from httplib import BadStatusLine
+from random import randint
 
 #import any other natual processing libs
 
@@ -103,8 +104,19 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 # right now response just parrots the message back at the sender
 
 
-def response(message):
-    return message
+
+def response(celeb, message, link, user):
+    response = []
+    response.append(celeb + "'s latest article: " + message + ' ' + link)
+    response.append('Did you know ' + celeb + 'is concerned about this? ' + message + ' ' + link)
+    response.append(celebe + " has a new guilty pleasure: " + message + ' ' + link)
+    response.append("Want to know what's more popular than " + celeb + '?\n' + message + ' ' + link)
+    response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
+    response.append("Hey @" + user + ', take aa break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
+    response.append("@" + user + ' + ' celebe + ' = ' message + ' ' + link)
+    response.append("What do you and " + celeb + ' have in common? ' + title + ' ' + link)
+    i = randint(0,7) #inclusive
+    return response[i]
 
 
 def get_id_str_list(name_list, collection, limit=10):
@@ -184,8 +196,6 @@ name_list=['ashton kutcher',
 'beyonce',
 'britney spears',
 'chris brown',
-'cristiano ronaldo',
-'ellen degeneres',
 'jennifer lopez',
 'justin bieber',
 'justin timberlake',
