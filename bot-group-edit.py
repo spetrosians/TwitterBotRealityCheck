@@ -154,22 +154,11 @@ def searchMongo(name,word_list,collection, limit=10):
                         
     no_list=[ re.compile(word, re.I)
                         for word in word_list['no']] 
-    
-   # line1=r'love.*'+first+' ?'+last
-    #line2=first+' ?'+last+r'.*love'
-    #re_exp=re.compile(r'('+line1+r')|('+line2+r')', re.IGNORECASE)
-    
-    #query={'$and':
-     #         [ {'text':re_exp},
-      #          {'text':{'$not':re.compile(r'^.?@'+first+last, re.IGNORECASE)}}]
-       # }
-        
+    no_list.append(re.compile(r'http', re.I))
+
     query={'text':{'$in':yes_list, '$nin':no_list}}
     
     return list(collection.find(query).limit(limit))
-
-#bot=oauth_login()
-
 
 
 
