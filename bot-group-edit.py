@@ -111,7 +111,7 @@ def response(celeb, message, link, user):
     response = []
     response.append(celeb + "'s latest article: " + message + ' ' + link)
     response.append('Did you know ' + celeb + 'is concerned about this? ' + message + ' ' + link)
-    response.append(celebe + " has a new guilty pleasure: " + message + ' ' + link)
+    response.append(celeb + " has a new guilty pleasure: " + message + ' ' + link)
     response.append("Want to know what's more popular than " + celeb + '?\n' + message + ' ' + link)
     response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
     response.append("Hey @" + user + ', take aa break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
