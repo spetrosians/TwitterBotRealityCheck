@@ -107,7 +107,7 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 
 	
 def response(celeb, link, user, miniTeaser, teaser, title):
-	response_good = false
+	response_good = False
 	while not response_good:
 		if len(miniTeaser)>0:
 			message = miniTeaser
@@ -121,22 +121,18 @@ def response(celeb, link, user, miniTeaser, teaser, title):
 		response.append("Want to know what's more popular than " + celeb + '?\n' + message + ' ' + link)
 		response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
 		response.append("Hey @" + user + ', take a break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
-		response.append("@" + user + ' + ' celebe + ' = ' message + ' ' + link)
+		response.append("@" + user + ' + ' +celeb + ' = '+ message + ' ' + link)
 		response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
 		i = randint(0,7) #inclusive
 		response = response[i]
 		if message == title:
 			response = "I don't care about " + celeb
-			response_good = true
+			response_good = True
 		if len(response) < 140:
-			response_good = true
+			response_good = True
 		else:
-			message = title
-		
-		
+			message = title	
     return response
-=======
-
 
 def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
     to_respond=[searchMongo(name,celeb_word_list[name], collection, limit) for name in name_list]
