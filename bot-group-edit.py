@@ -104,7 +104,7 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 
 # all of your project code can be wrapped inside of this function
 # right now response just parrots the message back at the sender
-<<<<<<< HEAD
+
 	
 def response(celeb, link, user, miniTeaser, teaser, title):
 	response_good = false
@@ -136,22 +136,6 @@ def response(celeb, link, user, miniTeaser, teaser, title):
 		
     return response
 =======
-
-
-
-def response(celeb, message, link, user):
-    response = []
-    response.append(celeb + "'s latest article: " + message + ' ' + link)
-    response.append('Did you know ' + celeb + 'is concerned about this? ' + message + ' ' + link)
-    response.append(celeb + " has a new guilty pleasure: " + message + ' ' + link)
-    response.append("Want to know what's more popular than " + celeb + '?\n' + message + ' ' + link)
-    response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
-    response.append("Hey @" + user + ', take aa break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
-    response.append('@' + user + ' + ' celeb + ' = ' message + ' ' + link)
-    response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
-    i = randint(0,7) #inclusive
-    return response[i]
->>>>>>> origin/master
 
 
 def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
