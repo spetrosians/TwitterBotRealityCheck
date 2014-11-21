@@ -14,7 +14,6 @@ from twitter.oauth import OAuth, write_token_file , read_token_file
 from twitter.oauth_dance import oauth_dance
 from urllib2 import URLError
 from httplib import BadStatusLine
-from random import randint
 
 #import any other natual processing libs
 
@@ -106,19 +105,8 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 # right now response just parrots the message back at the sender
 
 
-
-def response(celeb, message, link, user):
-    response = []
-    response.append(celeb + "'s latest article: " + message + ' ' + link)
-    response.append('Did you know ' + celeb + 'is concerned about this? ' + message + ' ' + link)
-    response.append(celebe + " has a new guilty pleasure: " + message + ' ' + link)
-    response.append("Want to know what's more popular than " + celeb + '?\n' + message + ' ' + link)
-    response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
-    response.append("Hey @" + user + ', take aa break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
-    response.append("@" + user + ' + ' celebe + ' = ' message + ' ' + link)
-    response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
-    i = randint(0,7) #inclusive
-    return response[i]
+def response(message):
+    return message
 
 
 def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
@@ -169,62 +157,7 @@ def searchMongo(name,word_list,collection, limit=10):
     return list(collection.find(query).limit(limit))
 
 #bot=oauth_login()
-<<<<<<< HEAD
           
-=======
-def deletePosts(bot): #mass delete the posts
-    
-    statuses=bot.statuses.user_timeline()
-    print len(statuses)
-    for status in statuses:
-        try:
-            print 'deleting ', status['id']
-            bot.statuses.destroy(id=status['id'])
-        except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
-                        print e
-
-def textFileForCeleb(name):
-    import pymongo
-    import re
-    name=name.split(' ')
-    if(len(name)>1):
-        first=name[0]
-        last=name[1]
-    else:
-        first=name[0]
-        last=''
-    
-    conn=pymongo.MongoClient()['twitter']['lines']
-    result=conn.find({'text':{'$regex':first+r'.?'+last, '$options':'is'}})
-    text_r=[line['text'].strip() for line in list(result)]
-    with open(first+'_'+last+'.txt', 'w') as f:
-        for line in text_r:
-               f.write(line+'\n')
-            
-
-
-
-
-
-
-name_list=['ashton kutcher',
-'beyonce',
-'britney spears',
-'chris brown',
-'jennifer lopez',
-'justin bieber',
-'justin timberlake',
-'katy perry',
-'kim kardashian',
-'lady gaga',
-'miley cyrus',
-'nicki minaj',
-'oprah winfrey',
-'rihanna',
-'selena gomez',
-'shakira'
-'taylor swift']
->>>>>>> 2266da4a60e5eb820cce600933bc76fe2ca6bcdb
 
 
 
