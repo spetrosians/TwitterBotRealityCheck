@@ -139,8 +139,7 @@ def response(celeb, link, user, miniTeaser, teaser, title):
 
 def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
     to_respond=[searchMongo(name,celeb_word_list[name], collection, limit) for name in name_list]
-    print to_respond
-    id_str_list=[tweet['id_str'] for name in to_respond for tweet in name]
+    id_str_list={name: tweet['id_str'] for name in to_respond for tweet in name}
     return id_str_list
 
 # Connection to Mongo DB
@@ -202,71 +201,76 @@ if __name__ == "__main__":
             user_ids['id_list']=[]
         
         try:
-            id_list_str=get_id_str_list(name_list[:12], collection, limit=1)
-            print id_list_str
-            for id_str in id_list_str:
-                try:
-                    status = make_twitter_request(bot.statuses.user_timeline)
-                    if len(status) > 0:
-                        last_id = status[0]['id']
-                        print 'last_id', last_id    
-                    
-                    
-                    # reply to one of the users pulled out from DB
-                   #======================================================== 
-                    mention=make_twitter_request(bot.statuses.show,_id=int(id_str))
-                    if mention['user']['id'] not in user_ids['id_list']: #check if the user has been responded to in the past 24 hours
-                        user_ids['id_list'].append(mention['user']['id'])
-                    else:
-                        continue
-                    message = mention['text']
-                    speaker = mention['user']['screen_name']
-                    _id=mention['id']
-                    print "[+] " + speaker + " is saying " + message
-                    reply = '@color_blind_if  get on earth(c) ' +speaker
-                    #reply = 'get on earth(c) ' +speaker+' forget '+ message
-                    if len(reply)>140: #in case message is more than 140 characters
-                        reply=reply[:140]
-                    print "[+] Replying " , reply 
-                    _id=532812179049676800 #would need to comment out once we have a real message
-                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                   
-                #===================================                 
-                #then respond to all the mentions (based on the last reply)
-                #===========================================
-                    if last_id!=None:
-                        mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_id)
-                    else:
-                        mentions = make_twitter_request(bot.statuses.mentions_timeline)
+            id_list_str=get_id_str_list(name_list, collection, limit=45)
+            id_list_str={tweet_id:name 
+                                for name in id_list_str 
+                                    for tweet_id in id_list_str[name]}
 
-                    if not mentions:
-                        print "No one talking to us now...", time.ctime()
-                
-                    mentions=[mentions[(len(mentions)-i-1)] for i in xrange(len(mentions))] #reverse the list
+            #make a call to npr.org
             
-                    for mention in mentions: 
-                        if mention['id'] > last_id and mention['user']['id']!=bot_id: #does not respond to itself
-                            print 'current mention_id ',mention['id']
-                            message = mention['text'].replace(bot_name, '')
+                    for id_str in id_list_str:
+                        try:
+                            status = make_twitter_request(bot.statuses.user_timeline)
+                            if len(status) > 0:
+                                last_id = status[0]['id']
+                                print 'last_id', last_id    
+                            
+                            
+                            # reply to one of the users pulled out from DB
+                        #======================================================== 
+                            mention=make_twitter_request(bot.statuses.show,_id=int(id_str))
+                            if mention['user']['id'] not in user_ids['id_list']: #check if the user has been responded to in the past 24 hours
+                                user_ids['id_list'].append(mention['user']['id'])
+                            else:
+                                continue
+                            message = mention['text']
                             speaker = mention['user']['screen_name']
-                            _id = mention['id']
-                            speaker_id = str(mention['id'])
-
+                            _id=mention['id']
                             print "[+] " + speaker + " is saying " + message
-                            reply = '@%s %s' % (speaker, response(message)) 
-                            print "[+] Replying " , reply
+                            reply = '@color_blind_if  get on earth(c) ' +speaker
+                            #reply = 'get on earth(c) ' +speaker+' forget '+ message
+                            if len(reply)>140: #in case message is more than 140 characters
+                                reply=reply[:140]
+                            print "[+] Replying " , reply 
+                            _id=532812179049676800 #would need to comment out once we have a real message
                             make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                           
-                                        
-                    sleep_int = 60 #downtime interval in seconds
-                    print "Sleeping...\n"
-                    time.sleep(sleep_int)
-
-                except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
-                        print e
-                        sleep_int = 60 #downtime interval in seconds
-                        print "Sleeping...\n"
-                        time.sleep(sleep_int)
+                        
+                        #===================================                 
+                        #then respond to all the mentions (based on the last reply)
+                        #===========================================
+                            if last_id!=None:
+                                mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_id)
+                            else:
+                                mentions = make_twitter_request(bot.statuses.mentions_timeline)
+        
+                            if not mentions:
+                                print "No one talking to us now...", time.ctime()
+                        
+                            mentions=[mentions[(len(mentions)-i-1)] for i in xrange(len(mentions))] #reverse the list
+                    
+                            for mention in mentions: 
+                                if mention['id'] > last_id and mention['user']['id']!=bot_id: #does not respond to itself
+                                    print 'current mention_id ',mention['id']
+                                    message = mention['text'].replace(bot_name, '')
+                                    speaker = mention['user']['screen_name']
+                                    _id = mention['id']
+                                    speaker_id = str(mention['id'])
+        
+                                    print "[+] " + speaker + " is saying " + message
+                                    reply = '@%s %s' % (speaker, response(message)) 
+                                    print "[+] Replying " , reply
+                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                
+                                                
+                            sleep_int = 60 #downtime interval in seconds
+                            print "Sleeping...\n"
+                            time.sleep(sleep_int)
+        
+                        except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
+                                print e
+                                sleep_int = 60 #downtime interval in seconds
+                                print "Sleeping...\n"
+                                time.sleep(sleep_int)
 
         
 
