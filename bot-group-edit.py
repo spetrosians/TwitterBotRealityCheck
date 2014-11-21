@@ -114,7 +114,7 @@ def response(celeb, message, link, user):
     response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
     response.append("Hey @" + user + ', take aa break from ' + celeb + ' and read this interesting article: ' + message + ' ' + link)
     response.append("@" + user + ' + ' celebe + ' = ' message + ' ' + link)
-    response.append("What do you and " + celeb + ' have in common? ' + title + ' ' + link)
+    response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
     i = randint(0,7) #inclusive
     return response[i]
 
