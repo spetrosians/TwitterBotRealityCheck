@@ -132,7 +132,7 @@ def response(celeb, link, user, miniTeaser, teaser, title):
 			response_good = True
 		else:
 			message = title	
-    return response
+        return response
 
 
 
