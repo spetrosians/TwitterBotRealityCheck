@@ -8,6 +8,9 @@ import twitter
 import re
 import pymongo
 import exceptions
+import requests
+from datetime import date
+from datetime import timedelta
 
 from twitter.api import Twitter, TwitterError
 from twitter.oauth import OAuth, write_token_file , read_token_file
@@ -104,7 +107,27 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 # all of your project code can be wrapped inside of this function
 # right now response just parrots the message back at the sender
 
-	
+def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()):
+    url_line='http://api.npr.org/query'
+    params = {'meta':'none',
+          'id': '3002',#'1149,1126,1013,1025,1136,1024,1007,1004,1056',
+          'fields': 'storyDate,text,listText,pullQuote', 
+          'requiredAssets':'image',
+          'startDate':'{0}'.format(startDate),
+          'endDate':'{0}'.format(endDate),
+          'dateType':'story',
+          'sort':'featured',
+          'action':'Or',
+          'output':'JSON', 
+          'numResults':'40',
+          'apiKey':'MDE3NDQzNTkzMDE0MTYxOTA0OTQyYjgzYw001'}
+    r = requests.get(url_line, params=params)
+    r_json=r.json()
+    stories=r_json['list']['story']
+    return stories
+				
+				
+						
 def getResponse(celeb, user, stories):
     good_response = False
     story_num = 0
@@ -115,7 +138,7 @@ def getResponse(celeb, user, stories):
             miniTeaser = story['miniTeaser']['$text']
         teaser = story['teaser']['$text']
         title = story['title']['$text']
-        response = response(celeb, user, miniTeaser, teaser, title, link)
+        response = response_func(celeb, user, miniTeaser, teaser, title, link)
         if type(response) == type(''):
             good_response = True
         story_num += 1
@@ -126,7 +149,8 @@ def getResponse(celeb, user, stories):
 
 
 from random import randint
-def response(celeb, user, miniTeaser, teaser, title, link):   
+
+def response_func(celeb, user, miniTeaser, teaser, title, link):   
     teaser = teaser.split()[0:10]
     teaser = ' '.join(teaser) + '...'
     messages = [teaser, miniTeaser, title]
@@ -210,12 +234,13 @@ if __name__ == "__main__":
     
     #main loop. Just keep searching anyone talking to us
     while True:
+        stories=getNPRStories()
         if (user_ids['date']-datetime.utcnow()).days>=1:
             user_ids['date']=datetime.utcnow()
             user_ids['id_list']=[]
         
         try:
-            id_list_str=get_id_str_list(name_list, collection, limit=45)
+            id_list_str=get_id_str_list(name_list,celeb_word_list, collection, limit=1)
             id_list_str={tweet_id:name 
                                 for name in id_list_str 
                                     for tweet_id in id_list_str[name]}
@@ -240,7 +265,8 @@ if __name__ == "__main__":
                             speaker = mention['user']['screen_name']
                             _id=mention['id']
                             print "[+] " + speaker + " is saying " + message
-                            reply = '@color_blind_if  get on earth(c) ' +speaker
+                           # reply = '@color_blind_if  get on earth(c) ' +speaker
+                            reply=getResponse(id_list_str[id_str], 'color_blind_if' , stories)
                             #reply = 'get on earth(c) ' +speaker+' forget '+ message
                             if len(reply)>140: #in case message is more than 140 characters
                                 reply=reply[:140]
