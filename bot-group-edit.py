@@ -111,11 +111,11 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()):
     url_line='http://api.npr.org/query'
     params = {'meta':'none',
-          'id': '3002',#'1149,1126,1013,1025,1136,1024,1007,1004,1056',
-          'fields': 'storyDate,text,listText,pullQuote,teaser,miniTeaser,title', 
+          'id': ','.join(['1149','1126','1013','1025','1136','1024','1007','1004','1056']),
+          'fields':','.join(['storyDate,text','listText','pullQuote','teaser','miniTeaser','title']), 
           'requiredAssets':'image',
-          'startDate':'{0}'.format(startDate),
-          'endDate':'{0}'.format(endDate),
+          'startDate':str(startDate),
+          'endDate':str(endDate),
           'dateType':'story',
           'sort':'featured',
           'action':'Or',
@@ -126,6 +126,7 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
     r_json=r.json()
     stories=r_json['list']['story']
     return stories
+
 				
 				
 						
@@ -170,7 +171,38 @@ def response_func(celeb, user, miniTeaser, teaser, title, link):
     return None
         
         
+def getResponse2(name, user, stories,mention=False):
+    name=name.split(' ')
+    if len(name)==2:
+        name=name[0][0].upper()+name[0][1:]+' '+name[1][0].upper()+name[1][1:]
+    elif len(name)==1:
+        name=name[0][0].upper()+' '+name[0][1:]
+    else:
+        name=name[0]
         
+    templates=[ "@{user} {celeb}'s latest article: {message} {link}",
+                "@{user} {celeb} is concerned about this: {message} {link}",
+                "@{user} {celeb} has a new guilty pleasure: {message} {link}",
+                "@{user} This is more popular than {celeb}?\n{message} {link}",
+                "@{user} Here's a break from {celeb}: {message} {link}",
+                "@{user} + {celeb} = {message} {link}",
+                "@{user} What do you and {celeb} have in common? {message} {link}",
+                "@{user} Check this out, thought provoking: {message} {link}"]
+    
+    lengths=[len(s.format(celeb=name, user=user, message='', link=''))+20 for s in templates]
+    i=randint(0,len(stories)-1)
+    j=randint(0, len(templates)-1)
+    link=stories[i]['link'][2]['$text']
+    if stories[i].has_key('teaser'):
+        message=stories[i]['teaser']['$text'].split('.')[0][:140-lengths[j]]
+    else:
+        message=stories[i]['text']['paragraph'][0]['$text'].split('.')[0][:140-lengths[j]]
+   # if len(message)>140-lengths[i]:
+     #   message=message[:140-lengths[i]]
+        
+    response=templates[j].format(celeb=name, user=user, message=message, link=link)
+    return response
+       
 
 
 
@@ -259,7 +291,7 @@ if __name__ == "__main__":
                         #======================================================== 
                             mention=make_twitter_request(bot.statuses.show,_id=int(id_str))
                             if mention['user']['id'] not in user_ids['id_list']: #check if the user has been responded to in the past 24 hours
-                                user_ids['id_list'].append(mention['user']['id'])
+                                user_ids['id_list'].append(mention['user']['id_str'])
                             else:
                                 continue
                             message = mention['text']
@@ -267,11 +299,11 @@ if __name__ == "__main__":
                             _id=mention['id']
                             print "[+] " + speaker + " is saying " + message
                            # reply = '@color_blind_if  get on earth(c) ' +speaker
-                            reply=getResponse(id_list_str[id_str], 'color_blind_if' , stories)
+                            reply=getResponse2(id_list_str[id_str], 'color_blind_if' , stories)
                             #reply = 'get on earth(c) ' +speaker+' forget '+ message
                             if len(reply)>140: #in case message is more than 140 characters
                                 reply=reply[:140]
-                            print "[+] Replying " , reply 
+                            print "[+] Replying " , reply , len(reply)
                             _id=532812179049676800 #would need to comment out once we have a real message
                             make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                         
@@ -297,7 +329,8 @@ if __name__ == "__main__":
                                     speaker_id = str(mention['id'])
         
                                     print "[+] " + speaker + " is saying " + message
-                                    reply = '@%s %s' % (speaker, 'here should be a link to a pop culture article') 
+                                    reply = '@%s %s' % (speaker, '')
+                                    reply=getResponse2('', 'color_blind_if' , stories) 
                                     print "[+] Replying " , reply
                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                 
