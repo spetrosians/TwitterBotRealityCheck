@@ -49,8 +49,8 @@ celeb_word_list={
     'no':['(x*[0-9]+)','follow'] },
  'justin timberlake': 
     {'yes': ['man', 'beautiful', 'times', 'human', 'bad', 'thing', 'restaurantes', 'love', 'like', 'imagina', 'quer', 'nesses', 'pfvr', 'comer', 'dono', 'voice'],
-    'no':[] }
- 'beyonce': {'yes':['artist', 'year', 'amas', 'album', 'love', 'new', 'like', 'people', 'want', 'tell', 'think', 'girl', 'band', 'secret', 'never', 'even']
+    'no':[] },
+ 'beyonce': {'yes':['artist', 'year', 'amas', 'album', 'love', 'new', 'like', 'people', 'want', 'tell', 'think', 'girl', 'band', 'secret', 'never', 'even'],
     'no':[]}
  }
  
