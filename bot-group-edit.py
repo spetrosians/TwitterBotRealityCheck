@@ -264,6 +264,16 @@ if __name__ == "__main__":
     #bot_id=bot.account.verify_credentials()['id']
     print bot_id
     
+    user_ids={ 'date': datetime.utcnow(), 'id_list':[]}
+    if os.path.exists("responded_list.txt"):
+		f = file("responded_list.txt", "r")
+		user_ids['date'] = datetime.strptime(f.readline(), '%x %X')
+		user_ids['id_list']=[line for line in f.readlines()]
+		
+		f.close()
+    
+    
+    print user_ids['date'], user_ids['id_list']
     #main loop. Just keep searching anyone talking to us
     while True:
         stories=getNPRStories()
