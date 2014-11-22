@@ -55,7 +55,7 @@ celeb_word_list={
  }
  
  
-name_list=['ashton kutcher',
+name_list=[#'ashton kutcher',
 'beyonce',
 'britney spears',
 'chris brown',

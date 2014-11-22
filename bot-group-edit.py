@@ -1,5 +1,5 @@
-from celeb_word_list import *
-from aux_func import *
+#from celeb_word_list import *
+#from aux_func import *
 import os
 import sys
 import time
@@ -11,6 +11,7 @@ import exceptions
 import requests
 from datetime import date
 from datetime import timedelta
+from random import randint
 
 from twitter.api import Twitter, TwitterError
 from twitter.oauth import OAuth, write_token_file , read_token_file
@@ -111,7 +112,7 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
     url_line='http://api.npr.org/query'
     params = {'meta':'none',
           'id': '3002',#'1149,1126,1013,1025,1136,1024,1007,1004,1056',
-          'fields': 'storyDate,text,listText,pullQuote', 
+          'fields': 'storyDate,text,listText,pullQuote,teaser,miniTeaser,title', 
           'requiredAssets':'image',
           'startDate':'{0}'.format(startDate),
           'endDate':'{0}'.format(endDate),
@@ -133,22 +134,21 @@ def getResponse(celeb, user, stories):
     story_num = 0
     while not good_response:
         story = stories[story_num]
-        link = story['link']['$text']
-        if story.has_key('miniTeaser'):
-            miniTeaser = story['miniTeaser']['$text']
+        link = story['link'][0]['$text']
+    #    if story.has_key('miniTeaser'):
+     #       miniTeaser = story['miniTeaser']['$text']
         teaser = story['teaser']['$text']
         title = story['title']['$text']
-        response = response_func(celeb, user, miniTeaser, teaser, title, link)
+        response = response_func(celeb, user, '', teaser, title, link)
         if type(response) == type(''):
             good_response = True
         story_num += 1
         if story_num == len(stories):
-            response = "Check this out, thought provoking: " + link
+            response = "@"+user+" Check this out, thought provoking: " + link
             good_response = True
     return response
 
 
-from random import randint
 
 def response_func(celeb, user, miniTeaser, teaser, title, link):   
     teaser = teaser.split()[0:10]
@@ -163,7 +163,7 @@ def response_func(celeb, user, miniTeaser, teaser, title, link):
         response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
         response.append("@" + user + ' + ' +celeb + ' = '+ message + ' ' + link)
         response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
-        i = randint(0,7) #inclusive
+        i = randint(0,6) #inclusive
         response = response[i]
         if len(response)<=140:
             return response
@@ -176,9 +176,9 @@ def response_func(celeb, user, miniTeaser, teaser, title, link):
 
 
 def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
-    to_respond=[searchMongo(name,celeb_word_list[name], collection, limit) for name in name_list]
-    id_str_list={name: tweet['id_str'] for name in to_respond for tweet in name}
-    return id_str_list
+    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], collection, limit)]
+                                for name in name_list}
+    return to_respond
 
 # Connection to Mongo DB
 def connectMongo():
@@ -240,7 +240,8 @@ if __name__ == "__main__":
             user_ids['id_list']=[]
         
         try:
-            id_list_str=get_id_str_list(name_list,celeb_word_list, collection, limit=1)
+            name_list=['britney spears', 'justin bieber', 'katy perry']
+            id_list_str=get_id_str_list(name_list,celeb_word_list, collection, limit=2)
             id_list_str={tweet_id:name 
                                 for name in id_list_str 
                                     for tweet_id in id_list_str[name]}
@@ -296,7 +297,7 @@ if __name__ == "__main__":
                                     speaker_id = str(mention['id'])
         
                                     print "[+] " + speaker + " is saying " + message
-                                    reply = '@%s %s' % (speaker, response(message)) 
+                                    reply = '@%s %s' % (speaker, 'here should be a link to a pop culture article') 
                                     print "[+] Replying " , reply
                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                 
@@ -305,8 +306,9 @@ if __name__ == "__main__":
                             print "Sleeping...\n"
                             time.sleep(sleep_int)
         
-                        except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
-                                print e
+                        #except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
+                        except KeyboardInterrupt:    
+                                #print e
                                 sleep_int = 60 #downtime interval in seconds
                                 print "Sleeping...\n"
                                 time.sleep(sleep_int)
