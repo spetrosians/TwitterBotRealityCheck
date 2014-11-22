@@ -3,8 +3,8 @@
 
 celeb_word_list={
  'rihanna': 
-            {'yes':['love', 'like', 'chris', 'single', 'bravo', 'album', 'girl', 'music', 'song', 'eminem', 'amas', 'life', 'dinner', 'fan', 'people'],
-              'no':[] },
+    {'yes':['love', 'like', 'chris', 'single', 'bravo', 'album', 'girl', 'music', 'song', 'eminem', 'amas', 'life', 'dinner', 'fan', 'people'],
+    'no':[] },
  'lady gaga': 
     {'yes':['love', 'monster', 'inspiration', 'million', 'wild', 'endlessly', 'blessings', 'purpose', 'special', 'like', 'bravery', 'veterens', 'best', 'amazing', 'music'],
     'no':[] },
@@ -49,18 +49,14 @@ celeb_word_list={
     'no':['(x*[0-9]+)','follow'] },
  'justin timberlake': 
     {'yes': ['man', 'beautiful', 'times', 'human', 'bad', 'thing', 'restaurantes', 'love', 'like', 'imagina', 'quer', 'nesses', 'pfvr', 'comer', 'dono', 'voice'],
-<<<<<<< HEAD
-    'no':[] }
-=======
     'no':[] },
  'beyonce': {'yes':['artist', 'year', 'amas', 'album', 'love', 'new', 'like', 'people', 'want', 'tell', 'think', 'girl', 'band', 'secret', 'never', 'even'],
     'no':[]}
->>>>>>> 762969b477c60ea104b7a3d343ab5a25cb061392
  }
  
  
 name_list=['ashton kutcher',
-#'beyonce',
+'beyonce',
 'britney spears',
 'chris brown',
 'jennifer lopez',
