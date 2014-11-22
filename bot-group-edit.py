@@ -105,17 +105,32 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 # right now response just parrots the message back at the sender
 
 	
-from random import randint
-def response(celeb, link, user, miniTeaser, teaser, title):
-    
-    if len(miniTeaser)>0:
-        message = miniTeaser 
-    else:
-        message = teaser
-    response_good = False
-    
-    while not response_good:
+def getResponse(celeb, user, stories):
+    good_response = False
+    story_num = 0
+    while not good_response:
+        story = stories[story_num]
+        link = story['link']['$text']
+        if story.has_key('miniTeaser'):
+            miniTeaser = story['miniTeaser']['$text']
+        teaser = story['teaser']['$text']
+        title = story['title']['$text']
+        response = response(celeb, user, miniTeaser, teaser, title, link)
+        if type(response) == type(''):
+            good_response = True
+        story_num += 1
+        if story_num == len(stories):
+            response = "Check this out, thought provoking: " + link
+            good_response = True
+    return response
 
+
+from random import randint
+def response(celeb, user, miniTeaser, teaser, title, link):   
+    teaser = teaser.split()[0:10]
+    teaser = ' '.join(teaser) + '...'
+    messages = [teaser, miniTeaser, title]
+    for message in messages:
         response = []
         response.append(celeb + "'s latest article: " + message + ' ' + link)
         response.append(celeb + ' is concerned about this: ' + message + ' ' + link)
@@ -126,15 +141,12 @@ def response(celeb, link, user, miniTeaser, teaser, title):
         response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
         i = randint(0,7) #inclusive
         response = response[i]
-        if message == title:
-            response = "Check this out: " + link
-            response_good = True
-        if len(response) < 140-len(link)+20:
-            response_good = True
-        else:
-            message = title
-    return response
-
+        if len(response)<=140:
+            return response
+    return None
+        
+        
+        
 
 
 
