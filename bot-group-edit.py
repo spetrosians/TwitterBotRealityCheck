@@ -277,7 +277,7 @@ if __name__ == "__main__":
         
         try:
             name_list=['britney spears', 'justin bieber', 'katy perry', 'taylor swift']
-            id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=5)
+            id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=1)
             
             id_list_str={tweet_id:name 
                                 for name in id_list_str 
@@ -295,26 +295,22 @@ if __name__ == "__main__":
                             # reply to one of the users pulled out from DB
                         #======================================================== 
                             mention=make_twitter_request(bot.statuses.show,_id=int(id_str))
-                            if mention['user']['id'] not in user_ids['id_list']: #check if the user has been responded to in the past 24 hours
+
+                            if mention!=None and mention['user']['id_str'] not in user_ids['id_list']: #check if the user has been responded to in the past 24 hours
                                 user_ids['id_list'].append(mention['user']['id_str'])
-                            else:
-                                continue
-                            message = mention['text']
-                            speaker = mention['user']['screen_name']
-                            _id=mention['id']
-                            print "[+] " + speaker + " is saying " + message
-                           # reply = '@color_blind_if  get on earth(c) ' +speaker
-                            reply=getResponse2(id_list_str[id_str], 'color_blind_if' , stories)
-                            #reply = 'get on earth(c) ' +speaker+' forget '+ message
-                          #  if len(reply)>140: #in case message is more than 140 characters
-                           #     reply=reply[:140]
-                            print "[+] Replying " , reply
-                            _id=532812179049676800 #would need to comment out once we have a real message
-                            make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                            
+                                message = mention['text']
+                                speaker = mention['user']['screen_name']
+                                _id=mention['id']
+                                print "[+] " + speaker + " is saying " + message
+                                reply=getResponse2(id_list_str[id_str], 'color_blind_if' , stories)
+                                print "[+] Replying " , reply
+                                _id=532812179049676800 #would need to comment out once we have a real message
+                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                         
-                        #===================================                 
-                        #then respond to all the mentions (based on the last reply)
-                        #===========================================
+                            #===================================                 
+                            #then respond to all the mentions (based on the last reply)
+                            #===========================================
                             if last_id!=None:
                                 mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_id)
                             else:
@@ -333,7 +329,6 @@ if __name__ == "__main__":
                                     speaker = mention['user']['screen_name']
                                     _id = mention['id']
                                     speaker_id = str(mention['id'])
-        
                                     print "[+] " + speaker + " is saying " + message
                                     reply=getResponse2('', 'color_blind_if' , stories) 
                                     print "[+] Replying " , reply
