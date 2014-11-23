@@ -121,6 +121,22 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
           'output':'JSON', 
           'numResults':'40',
           'apiKey':'MDE3NDQzNTkzMDE0MTYxOTA0OTQyYjgzYw001'}
+          
+          #358046323, #Color Decoded: Stories That Span The Spectrum
+          #173814508,#The Race Card Project: Six-Word Essays
+          #156490415,#Joe's Big Idea
+          #1008,#Arts & Life
+          #1060,#Commentary
+          #1049,#Digital Life
+          #1025,#Environment
+          #1052,#Games & Humor
+          #1136,#History
+          #1129,#Humans
+          #1048,#Pop Culture
+          #1024,#Research News
+          #1007,#Science
+          #1004,#World
+          #1056, #World Story of the Day
     r = requests.get(url_line, params=params)
     r_json=r.json()
     stories=r_json['list']['story']
