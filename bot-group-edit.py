@@ -283,7 +283,7 @@ if __name__ == "__main__":
                                 for name in id_list_str 
                                     for tweet_id in id_list_str[name]}
 
-            #make a call to npr.org
+
             for id_str in id_list_str:
                         try:
                             status = make_twitter_request(bot.statuses.user_timeline)
