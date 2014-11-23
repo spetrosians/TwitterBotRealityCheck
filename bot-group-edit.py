@@ -9,8 +9,7 @@ import re
 import pymongo
 import exceptions
 import requests
-from datetime import date
-from datetime import timedelta
+from datetime import date, datetime, timedelta
 from random import randint
 
 from twitter.api import Twitter, TwitterError
@@ -175,7 +174,7 @@ def getResponse2(name, user, stories,mention=False):
     name=name.split(' ')
     if len(name)==2:
         name=name[0][0].upper()+name[0][1:]+' '+name[1][0].upper()+name[1][1:]
-    elif len(name)==1:
+    elif len(name)==1 and name[0]!='':
         name=name[0][0].upper()+' '+name[0][1:]
     else:
         name=name[0]
@@ -189,10 +188,10 @@ def getResponse2(name, user, stories,mention=False):
                 "@{user} What do you and {celeb} have in common? {message} {link}",
                 "@{user} Check this out, thought provoking: {message} {link}"]
     
-    lengths=[len(s.format(celeb=name, user=user, message='', link=''))+20 for s in templates]
+    lengths=[len(s.format(celeb=name, user=user, message='', link=''))+23 for s in templates]
     i=randint(0,len(stories)-1)
     j=randint(0, len(templates)-1)
-    link=stories[i]['link'][2]['$text']
+    link=stories[i]['link'][0]['$text']
     if stories[i].has_key('teaser'):
         message=stories[i]['teaser']['$text'].split('.')[0][:140-lengths[j]]
     else:
@@ -206,9 +205,8 @@ def getResponse2(name, user, stories,mention=False):
 
 
 
-
-def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
-    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], collection, limit)]
+def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
+    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], conn, limit)]
                                 for name in name_list}
     return to_respond
 
@@ -224,7 +222,7 @@ def connectMongo():
 
 
 
-def searchMongo(name,word_list,collection, limit=10):
+def searchMongo(name,word_list,conn, limit=10):
     name=name.split(' ')
     if(len(name)>1):
         first=name[0]
@@ -243,17 +241,14 @@ def searchMongo(name,word_list,collection, limit=10):
 
     query={'text':{'$in':yes_list, '$nin':no_list}}
     
-    return list(collection.find(query).limit(limit))
+    return list(conn.find(query).limit(limit))
 
 
 
 if __name__ == "__main__":
-    from datetime import datetime
-    user_ids={'date':datetime.utcnow(), 'id_list':[]}
-    conn=connectMongo()
-    db=conn.twitter
-    collection=db.lines
 
+    user_ids={'date':datetime.utcnow(), 'id_list':[]}
+    conn=pymongo.MongoClient()['twitter']['lines']
     last_id=None
 
     bot = oauth_login()
@@ -265,11 +260,10 @@ if __name__ == "__main__":
     print bot_id
     
     user_ids={ 'date': datetime.utcnow(), 'id_list':[]}
-    if os.path.exists("responded_list.txt"):
+    if os.path.exists("responded_list.txt") and os.path.getsize('responded_list.txt') > 0:
 		f = file("responded_list.txt", "r")
-		user_ids['date'] = datetime.strptime(f.readline(), '%x %X')
-		user_ids['id_list']=[line for line in f.readlines()]
-		
+		user_ids['date'] = datetime.strptime(f.readline(), '%x %X\n')
+		user_ids['id_list']=[line.strip() for line in f.readlines()]
 		f.close()
     
     
@@ -282,8 +276,9 @@ if __name__ == "__main__":
             user_ids['id_list']=[]
         
         try:
-            name_list=['britney spears', 'justin bieber', 'katy perry']
-            id_list_str=get_id_str_list(name_list,celeb_word_list, collection, limit=2)
+            name_list=['britney spears', 'justin bieber', 'katy perry', 'taylor swift']
+            id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=5)
+            
             id_list_str={tweet_id:name 
                                 for name in id_list_str 
                                     for tweet_id in id_list_str[name]}
@@ -311,9 +306,9 @@ if __name__ == "__main__":
                            # reply = '@color_blind_if  get on earth(c) ' +speaker
                             reply=getResponse2(id_list_str[id_str], 'color_blind_if' , stories)
                             #reply = 'get on earth(c) ' +speaker+' forget '+ message
-                            if len(reply)>140: #in case message is more than 140 characters
-                                reply=reply[:140]
-                            print "[+] Replying " , reply , len(reply)
+                          #  if len(reply)>140: #in case message is more than 140 characters
+                           #     reply=reply[:140]
+                            print "[+] Replying " , reply
                             _id=532812179049676800 #would need to comment out once we have a real message
                             make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                         
@@ -331,6 +326,7 @@ if __name__ == "__main__":
                             mentions=[mentions[(len(mentions)-i-1)] for i in xrange(len(mentions))] #reverse the list
                     
                             for mention in mentions: 
+                                print mention['id'], last_id
                                 if mention['id'] > last_id and mention['user']['id']!=bot_id: #does not respond to itself
                                     print 'current mention_id ',mention['id']
                                     message = mention['text'].replace(bot_name, '')
@@ -339,7 +335,6 @@ if __name__ == "__main__":
                                     speaker_id = str(mention['id'])
         
                                     print "[+] " + speaker + " is saying " + message
-                                    reply = '@%s %s' % (speaker, '')
                                     reply=getResponse2('', 'color_blind_if' , stories) 
                                     print "[+] Replying " , reply
                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
@@ -349,11 +344,11 @@ if __name__ == "__main__":
                             print "Sleeping...\n"
                             time.sleep(sleep_int)
         
-                        #except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
-                        except KeyboardInterrupt:    
-                                #print e
+                        except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
+                        #except KeyboardInterrupt:    
+                                print e
                                 sleep_int = 60 #downtime interval in seconds
-                                print "Sleeping...\n"
+                                print "Sleeping...error\n"
                                 time.sleep(sleep_int)
 
         
@@ -362,16 +357,7 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
                 print"[!] Cleaning up. last_id was ", last_id
                 with open('responded_list.txt','w') as f:
-                    f.write(user_ids['date'].strftime('%x %X'))
-                    f.writelines(user_ids['id_list'])
+                    f.write(user_ids['date'].strftime('%x %X\n'))
+                    for line in user_ids['id_list']:
+                        f.write(line+'\n')     
                 sys.exit()
-
-
-
-
-
-
-
-
-
-            
