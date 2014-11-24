@@ -32,4 +32,3 @@ def deletePosts(bot): #mass delete the posts
         except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
                         print e
 
-  
