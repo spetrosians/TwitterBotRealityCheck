@@ -170,24 +170,7 @@ def getResponse(celeb, user, stories):
             good_response = True
     return response
 
-def response_func(celeb, user, miniTeaser, teaser, title, link):   
-    teaser = teaser.split()[0:10]
-    teaser = ' '.join(teaser) + '...'
-    messages = [teaser, miniTeaser, title]
-    for message in messages:
-        response = []
-        response.append(celeb + "'s latest article: " + message + ' ' + link)
-        response.append(celeb + ' is concerned about this: ' + message + ' ' + link)
-        response.append(celeb + " has a new guilty pleasure: " + message + ' ' + link)
-        response.append("This is more popular than " + celeb + '?\n' + message + ' ' + link)
-        response.append("Here's a break from " + celeb + ': ' + message + ' ' + link)
-        response.append("@" + user + ' + ' +celeb + ' = '+ message + ' ' + link)
-        response.append("What do you and " + celeb + ' have in common? ' + message + ' ' + link)
-        i = randint(0,6) #inclusive
-        response = response[i]
-        if len(response)<=140:
-            return response
-    return None
+
         
         
 
@@ -253,7 +236,7 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
           #1060,#Commentary
           #1049,#Digital Life
           #1025,#Environment
-          #1052,#Games & Humour
+          #1052,#Games & Humor
           #1136,#History
           #1129,#Humans
           #1024,#Research News
