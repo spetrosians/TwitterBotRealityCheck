@@ -253,7 +253,7 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
           #1060,#Commentary
           #1049,#Digital Life
           #1025,#Environment
-          #1052,#Games & Humor
+          #1052,#Games & Humour
           #1136,#History
           #1129,#Humans
           #1024,#Research News
