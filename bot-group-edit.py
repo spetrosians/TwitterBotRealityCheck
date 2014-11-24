@@ -115,41 +115,6 @@ def response(celeb, link, user, miniTeaser, teaser, title):
 # all of your project code can be wrapped inside of this function
 # right now response just parrots the message back at the sender
 
-def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()):
-    url_line='http://api.npr.org/query'
-    params = {'meta':'none',
-          'id': ','.join(['1149','1126','1013','1025','1136','1024','1007','1004','1056']),
-          'fields':','.join(['storyDate,text','listText','pullQuote','teaser','miniTeaser','title']), 
-          'requiredAssets':'image',
-          'startDate':str(startDate),
-          'endDate':str(endDate),
-          'dateType':'story',
-          'sort':'featured',
-          'action':'Or',
-          'output':'JSON', 
-          'numResults':'40',
-          'apiKey':'MDE3NDQzNTkzMDE0MTYxOTA0OTQyYjgzYw001'}
-          
-          #358046323, #Color Decoded: Stories That Span The Spectrum
-          #173814508,#The Race Card Project: Six-Word Essays
-          #156490415,#Joe's Big Idea
-          #1008,#Arts & Life
-          #1060,#Commentary
-          #1049,#Digital Life
-          #1025,#Environment
-          #1052,#Games & Humor
-          #1136,#History
-          #1129,#Humans
-          #1048,#Pop Culture
-          #1024,#Research News
-          #1007,#Science
-          #1004,#World
-          #1056, #World Story of the Day
-    r = requests.get(url_line, params=params)
-    r_json=r.json()
-    stories=r_json['list']['story']
-    return stories
-
 										
 def getResponse(celeb, user, stories):
     good_response = False
@@ -170,9 +135,6 @@ def getResponse(celeb, user, stories):
             good_response = True
     return response
 
-
-        
-        
 
 def getResponse2(name, user, stories,mention=False):
     name=name.split(' ')
