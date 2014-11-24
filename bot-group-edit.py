@@ -190,6 +190,7 @@ def response_func(celeb, user, miniTeaser, teaser, title, link):
     return None
         
         
+
 def getResponse2(name, user, stories,mention=False):
     name=name.split(' ')
     if len(name)==2:
@@ -199,14 +200,21 @@ def getResponse2(name, user, stories,mention=False):
     else:
         name=name[0]
         
-    templates=[ "@{user} {celeb}'s latest article: {message} {link}",
-                "@{user} {celeb} is concerned about this: {message} {link}",
-                "@{user} {celeb} has a new guilty pleasure: {message} {link}",
-                "@{user} This is more popular than {celeb}?\n{message} {link}",
-                "@{user} Here's a break from {celeb}: {message} {link}",
-                "@{user} + {celeb} = {message} {link}",
-                "@{user} What do you and {celeb} have in common? {message} {link}",
-                "@{user} Check this out, thought provoking: {message} {link}"]
+    templates=[ "@{user} {celeb} shares a colorful world with you. {message} {link}",
+                "@{user} Even {celeb} doesn't have enough money to end racism. {message} {link}",
+                "@{user} Do you think {celeb} can come up with an idea like this? {message} {link}",
+                "@{user} Here's a different view of art than {celeb}'s: {message} {link}",
+                "@{user} Interesting news! what do you think {celeb} has to say about it? {message} {link}",
+                "@{user} Do you think {celeb} is tech savvy? {message} {link}",
+                "@{user} What is {celeb}'s favorite weather? {message} {link}",
+                "@{user} vs. {celeb} Who would win? {message} {link}",
+                "@{user} Would {celeb} still be a celebrity back then? {message} {link}",
+                "@{user} If you think {celeb}'s cool, check these people out! {message} {link}", 
+                "@{user} {celeb} should fund this research: {message} {link}",
+                "@{user} what does the future hold? {celeb} or this AWSOME science! {message} {link}",
+                "@{user} There's more to life than {celeb}, check out what's happening around the world! {message} {link}",
+                "@{user} Here's a break from {celeb}, check out what's happening around the world! {message} {link}"]
+ 
     
     lengths=[len(s.format(celeb=name, user=user, message='', link=''))+23 for s in templates]
     i=randint(0,len(stories)-1)
@@ -222,18 +230,46 @@ def getResponse2(name, user, stories,mention=False):
     response=templates[j].format(celeb=name, user=user, message=message, link=link)
     return response
 
+def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()):
+    url_line='http://api.npr.org/query'
+    params = {'meta':'none',
+          'id': ','.join(['358046323','173814508','156490415','1008','1060','1049','1025','1052','1136','1129',
+                          '1024','1007','1004','1056']),
+          'fields':','.join(['storyDate,text','listText','pullQuote','teaser','miniTeaser','title']), 
+          'requiredAssets':'image',
+          'startDate':str(startDate),
+          'endDate':str(endDate),
+          'dateType':'story',
+          'sort':'featured',
+          'action':'Or',
+          'output':'JSON', 
+          'numResults':'40',
+          'apiKey':'MDE3NDQzNTkzMDE0MTYxOTA0OTQyYjgzYw001'}
+          
+          #358046323, #Color Decoded: Stories That Span The Spectrum
+          #173814508,#The Race Card Project: Six-Word Essays
+          #156490415,#Joe's Big Idea
+          #1008,#Arts & Life
+          #1060,#Commentary
+          #1049,#Digital Life
+          #1025,#Environment
+          #1052,#Games & Humor
+          #1136,#History
+          #1129,#Humans
+          #1024,#Research News
+          #1007,#Science
+          #1004,#World
+          #1056, #World Story of the Day
+    r = requests.get(url_line, params=params)
+    r_json=r.json()
+    stories=r_json['list']['story']
+    return stories
 
-def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
-    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], collection, limit)]
-=======
+
+
 def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
     to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], conn, limit)]
->>>>>>> fe52db4fbd17bdf60c8ebeaa9d6283ef5f1d66e3
-=======
-def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
-    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], conn, limit)]
->>>>>>> origin/master
-                                for name in name_list}
+														for name in name_list}
     return to_respond
 
 # Connection to Mongo DB
