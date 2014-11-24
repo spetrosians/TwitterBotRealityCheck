@@ -98,7 +98,7 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
             if error_count > max_errors:
                 print >> sys.stderr, "Too many consecutive errors...bailing out."
                 raise
-<<<<<<< HEAD
+
                 	
 from random import randint
 def response(celeb, link, user, miniTeaser, teaser, title):
@@ -110,7 +110,6 @@ def response(celeb, link, user, miniTeaser, teaser, title):
     response_good = False
     
     while not response_good:
-=======
                 
 
 # all of your project code can be wrapped inside of this function
@@ -151,9 +150,7 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
     stories=r_json['list']['story']
     return stories
 
-				
-				
-						
+										
 def getResponse(celeb, user, stories):
     good_response = False
     story_num = 0
@@ -172,9 +169,6 @@ def getResponse(celeb, user, stories):
             response = "@"+user+" Check this out, thought provoking: " + link
             good_response = True
     return response
-
->>>>>>> origin/master
-
 
 def response_func(celeb, user, miniTeaser, teaser, title, link):   
     teaser = teaser.split()[0:10]
@@ -227,14 +221,7 @@ def getResponse2(name, user, stories,mention=False):
         
     response=templates[j].format(celeb=name, user=user, message=message, link=link)
     return response
-<<<<<<< HEAD
-=======
-       
 
-
-
-<<<<<<< HEAD
->>>>>>> origin/master
 
 def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
     to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], collection, limit)]
@@ -242,6 +229,10 @@ def get_id_str_list(name_list, celeb_word_list, collection, limit=10):
 def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
     to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], conn, limit)]
 >>>>>>> fe52db4fbd17bdf60c8ebeaa9d6283ef5f1d66e3
+=======
+def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
+    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], conn, limit)]
+>>>>>>> origin/master
                                 for name in name_list}
     return to_respond
 
@@ -254,14 +245,8 @@ def connectMongo():
        print "Could not connect to MongoDB: %s" % e 
     return conn
 
-<<<<<<< HEAD
-def searchMongo(name,word_list,collection, limit=10):
-=======
-
-
-
 def searchMongo(name,word_list,conn, limit=10):
->>>>>>> fe52db4fbd17bdf60c8ebeaa9d6283ef5f1d66e3
+
     name=name.split(' ')
     if(len(name)>1):
         first=name[0]
@@ -308,12 +293,8 @@ if __name__ == "__main__":
     #main loop. Just keep searching anyone talking to us
 	#a specific user will only get one response per day 
     while True:
-<<<<<<< HEAD
-        if (user_ids['date']-datetime.utcnow()).days>=1:  
-=======
         stories=getNPRStories()
         if (user_ids['date']-datetime.utcnow()).days>=1:
->>>>>>> origin/master
             user_ids['date']=datetime.utcnow()
             user_ids['id_list']=[]
         
