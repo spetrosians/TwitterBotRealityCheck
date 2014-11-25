@@ -274,7 +274,7 @@ if __name__ == "__main__":
     last_status='0'
     tweet_list=[]
     search_more=False
-    search_lim=1
+    search_lim=3
     conn=pymongo.MongoClient()['twitter']['lines']
     
 
@@ -297,11 +297,11 @@ if __name__ == "__main__":
     
     
     if os.path.exists("responded_pkl") and os.path.getsize('responded_pkl') > 0:
-		f = file("responded_pkl.txt", "r")
+		f = file("responded_pkl", "r")
                 tweet_list=pkl.load(f)
 		f.close()    
     
-    
+    print 'tweet_list', tweet_list
     
     stories=getNPRStories()
     
@@ -309,11 +309,13 @@ if __name__ == "__main__":
     print user_ids['date'], user_ids['id_list']
     #main loop. Just keep searching anyone talking to us
 	#a specific user will only get one response per day 
+    to_respond=[]
+    
     while True:
  
         try:
             
-            to_respond=[]
+            
           
             if (user_ids['date']-datetime.utcnow()).days>=1:
                 user_ids['date']=datetime.utcnow()
@@ -323,6 +325,7 @@ if __name__ == "__main__":
             if stories==None:
                 stories=getNPRStories()
         
+            name_list=['katy perry','justin bieber', 'britney spears']
             
             if len(to_respond)==0:
                 id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=search_lim)
@@ -337,24 +340,24 @@ if __name__ == "__main__":
                                     for tweet_id in id_list_str[name] if tweet_id not in tweet_list}
                                     
                 if len(id_list_str)==0:
-                    search_lim+=3        
+                        search_lim+=3        
                     
                     
                 to_respond=id_list_str.keys()
+                if len(tweet_list)>0 and len(to_respond)>0: 
+                    max_last_tweet=str(max([int(t) for t in tweet_list]))
+                    if int(to_respond[0])>int(max_last_tweet):
+                        search_lim=3
             
             #if len(id_list_str)>0:
             #        last_tweet=str(max([int(t) for t in id_list_str]))
             
-            if len(tweet_list)>0: 
-                    last_tweet_temp=str(max([int(t) for t in tweet_list]))
-                    if int(last_tweet_temp)>int(last_tweet):
-                        last_tweet=last_tweet_temp
-                        search_lim=3
+
         
 
             if len(to_respond)!=0:
                             last_tweet=to_respond.pop()
-                            tweet_list.append(last_tweet)
+                            
  
             #for id_str in id_list_str:
                       #  try:
@@ -375,16 +378,17 @@ if __name__ == "__main__":
                                 speaker = mention['user']['screen_name']
                                 _id=mention['id']
                                 print "[+] " + speaker + " is saying " + message
-                                reply=getResponse2(id_list_str[id_str], speaker , stories)
+                                reply=getResponse2(id_list_str[last_tweet], speaker , stories)
                                 print "[+] Replying " , reply
                                 #_id=532812179049676800 #would need to comment out once we have a real message
                                 make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                tweet_list.append(last_tweet)
                         
                             #===================================                 
                             #then respond to all the mentions (based on the last reply)
                             #===========================================
                             if last_status!='0':
-                                mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_id)
+                                mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_status)
                             else:
                                 mentions = make_twitter_request(bot.statuses.mentions_timeline)
         
