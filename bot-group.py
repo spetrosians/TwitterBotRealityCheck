@@ -117,7 +117,7 @@ def getResponse2(name, user, stories_dict,mention=False):
                 '1008':"@{user} Here's a different view of life than {celeb}'s: {message} {link}",
                 '1060':"@{user} Interesting news! what do you think {celeb} has to say about it? {message} {link}",
                 '1049':"@{user} Do you think {celeb} is tech savvy? {message} {link}",
-                '1025':"@{user} What is {celeb}'s favorite weather? {message} {link}",
+                '1025':"@{user} Does {celeb} care for the environment? {message} {link}",
                 '1052':"@{user} vs. {celeb} Who would win? {message} {link}",
                 '1136':"@{user} Would {celeb} still be a celebrity back then? {message} {link}",
                 '1129':"@{user} If you think {celeb}'s cool, check these people out! {message} {link}", 
