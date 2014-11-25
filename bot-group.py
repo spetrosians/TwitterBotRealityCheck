@@ -325,7 +325,7 @@ if __name__ == "__main__":
             if stories==None:
                 stories=getNPRStories()
         
-            name_list=['katy perry','justin bieber', 'britney spears']
+            name_list=['katy perry','justin bieber', 'britney spears', 'kim kardashian', 'miley cyrus', 'taylor swift']
             
             if len(to_respond)==0:
                 print 'searching for tweets'
