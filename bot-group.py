@@ -274,7 +274,7 @@ if __name__ == "__main__":
     last_status='0'
     tweet_list=[]
     search_more=False
-    search_lim=3
+    search_lim=1
     conn=pymongo.MongoClient()['twitter']['lines']
     
 
@@ -415,7 +415,7 @@ if __name__ == "__main__":
                                 
                                
                                                                  
-                            sleep_int = 60*5#downtime interval in seconds
+                            sleep_int = 60*2#downtime interval in seconds
                             print "Sleeping...\n"
                             time.sleep(sleep_int)
         
@@ -468,7 +468,7 @@ if __name__ == "__main__":
                                 
                                
                                                                  
-                sleep_int = 60*5#downtime interval in seconds
+                sleep_int = 60#downtime interval in seconds
                 print "Sleeping...\n"
                 time.sleep(sleep_int)
                         
