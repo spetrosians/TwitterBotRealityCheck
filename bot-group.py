@@ -271,7 +271,7 @@ if __name__ == "__main__":
     user_ids={'date':datetime.utcnow(), 'id_list':[]}
     last_tweet='0'
     first_tweet='0'
-    last_status=None
+    last_status='0'
     tweet_list=[]
     search_more=False
     search_lim=3
@@ -359,7 +359,7 @@ if __name__ == "__main__":
                       #  try:
                             status = make_twitter_request(bot.statuses.user_timeline)
                             if len(status) > 0:
-                                last_status = status[0]['id']
+                                last_status = status[0]['id_str']
                                 print 'last_id', last_status    
                             
                             
@@ -382,7 +382,7 @@ if __name__ == "__main__":
                             #===================================                 
                             #then respond to all the mentions (based on the last reply)
                             #===========================================
-                            if last_status!=None:
+                            if last_status!='0':
                                 mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_id)
                             else:
                                 mentions = make_twitter_request(bot.statuses.mentions_timeline)
@@ -428,13 +428,13 @@ if __name__ == "__main__":
             else:
                 status = make_twitter_request(bot.statuses.user_timeline)
                 if len(status) > 0:
-                        last_status = status[0]['id']
+                        last_status = status[0]['id_str']
                         print 'last_id', last_status  
                         
                             #===================================                 
                             #then respond to all the mentions (based on the last reply)
                             #===========================================
-                if last_status!=None:
+                if last_status!='0':
                         mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_id)
                 else:
                         mentions = make_twitter_request(bot.statuses.mentions_timeline)
