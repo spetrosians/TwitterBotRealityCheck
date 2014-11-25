@@ -1,16 +1,6 @@
 #from celeb_word_list import *
 #from aux_func import *
-import os
-import sys
-import time
-import json
-import twitter
-import re
-import pymongo
-import exceptions
-import requests
-from datetime import date, datetime, timedelta
-from random import randint
+	
 
 from twitter.api import Twitter, TwitterError
 from twitter.oauth import OAuth, write_token_file , read_token_file
@@ -99,99 +89,118 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
                 print >> sys.stderr, "Too many consecutive errors...bailing out."
                 raise
 
-                	
-from random import randint
-def response(celeb, link, user, miniTeaser, teaser, title):
-    
-    if len(miniTeaser)>0:
-        message = miniTeaser 
-    else:
-        message = teaser
-    response_good = False
-    
-    while not response_good:
-                
-
-# all of your project code can be wrapped inside of this function
-# right now response just parrots the message back at the sender
-
-										
-def getResponse(celeb, user, stories):
-    good_response = False
-    story_num = 0
-    while not good_response:
-        story = stories[story_num]
-        link = story['link'][0]['$text']
-    #    if story.has_key('miniTeaser'):
-     #       miniTeaser = story['miniTeaser']['$text']
-        teaser = story['teaser']['$text']
-        title = story['title']['$text']
-        response = response_func(celeb, user, '', teaser, title, link)
-        if type(response) == type(''):
-            good_response = True
-        story_num += 1
-        if story_num == len(stories):
-            response = "@"+user+" Check this out, thought provoking: " + link
-            good_response = True
-    return response
 
 
-def getResponse2(name, user, stories,mention=False):
+def getResponse2(name, user, stories_dict,mention=False):
     name=name.split(' ')
     if len(name)==2:
         name=name[0][0].upper()+name[0][1:]+' '+name[1][0].upper()+name[1][1:]
     elif len(name)==1 and name[0]!='':
-        name=name[0][0].upper()+' '+name[0][1:]
+        name=name[0][0].upper()+name[0][1:]
     else:
         name=name[0]
         
-    templates=[ "@{user} {celeb} shares a colorful world with you. {message} {link}",
-                "@{user} Even {celeb} doesn't have enough money to end racism. {message} {link}",
-                "@{user} Do you think {celeb} can come up with an idea like this? {message} {link}",
-                "@{user} Here's a different view of art than {celeb}'s: {message} {link}",
-                "@{user} Interesting news! what do you think {celeb} has to say about it? {message} {link}",
-                "@{user} Do you think {celeb} is tech savvy? {message} {link}",
-                "@{user} What is {celeb}'s favorite weather? {message} {link}",
-                "@{user} vs. {celeb} Who would win? {message} {link}",
-                "@{user} Would {celeb} still be a celebrity back then? {message} {link}",
-                "@{user} If you think {celeb}'s cool, check these people out! {message} {link}", 
-                "@{user} {celeb} should fund this research: {message} {link}",
-                "@{user} what does the future hold? {celeb} or this AWSOME science! {message} {link}",
-                "@{user} There's more to life than {celeb}, check out what's happening around the world! {message} {link}",
-                "@{user} Here's a break from {celeb}, check out what's happening around the world! {message} {link}"]
+    templates={'358046323':"@{user} {celeb} shares a colorful world with you. {message} {link}",
+                '173814508':"@{user} Even {celeb} doesn't have enough money to end racism. {message} {link}",
+                '156490415':"@{user} Do you think {celeb} can come up with an idea like this? {message} {link}",
+                '1008':"@{user} Here's a different view of life than {celeb}'s: {message} {link}",
+                '1060':"@{user} Interesting news! what do you think {celeb} has to say about it? {message} {link}",
+                '1049':"@{user} Do you think {celeb} is tech savvy? {message} {link}",
+                '1025':"@{user} What is {celeb}'s favorite weather? {message} {link}",
+                '1052':"@{user} vs. {celeb} Who would win? {message} {link}",
+                '1136':"@{user} Would {celeb} still be a celebrity back then? {message} {link}",
+                '1129':"@{user} If you think {celeb}'s cool, check these people out! {message} {link}", 
+                '1024':"@{user} {celeb} should fund this research: {message} {link}",
+                '1007':"@{user} what does the future hold? {celeb} or this AWSOME science! {message} {link}",
+                '1004':"@{user} There's more to life than {celeb}, check out what's happening around the world! {message} {link}",
+                '1056':"@{user} Here's a break from {celeb}, check out what's happening around the world! {message} {link}"}
  
+    def trimMessage(message, length):
+        message=message.encode("ascii", "ignore")
+        message=message.split('.')[0]
+        if len(message)>140-length:
+            words=message.split(' ')
+            message=words[0]
+            for w in words[1:]:
+                if len(message+' '+w)<=140-length:
+                    message=message+' '+w
+        return message
     
-    lengths=[len(s.format(celeb=name, user=user, message='', link=''))+23 for s in templates]
-    i=randint(0,len(stories)-1)
-    j=randint(0, len(templates)-1)
-    link=stories[i]['link'][0]['$text']
-    if stories[i].has_key('teaser'):
-        message=stories[i]['teaser']['$text'].split('.')[0][:140-lengths[j]]
-    else:
-        message=stories[i]['text']['paragraph'][0]['$text'].split('.')[0][:140-lengths[j]]
-   # if len(message)>140-lengths[i]:
-     #   message=message[:140-lengths[i]]
+    def getSentences(story):
+        paragraphs=story['text']['paragraph']
+        text_list=[p['$text'] for p in paragraphs]
+        text='\n'.join(text_list)
+        blob=TextBlob(text)
+        most_colored=[(s.polarity, s.subjectivity, s.raw) for s in blob.sentences]
+        sents=[min(most_colored, key=lambda x: x[0])[2].replace('.',''),
+           max(most_colored, key=lambda x: x[0])[2].replace('.',''),
+           min(most_colored, key=lambda x: x[1])[2].replace('.',''),
+           max(most_colored, key=lambda x: x[1])[2].replace('.','')]
+        return sents
+    
+    lengths={s:(len(templates[s].format(celeb=name, user=user, message='', link=''))+25)
+                             for s in templates}
+    topic_keys=stories_dict.keys() #get topics returned by the npr query
+    i=randint(0, len(topic_keys)-1) #choose random topic
+    stories=stories_dict[topic_keys[i]]
+    j=randint(0,len(stories)-1) #choose random story within the topic
+    link=stories[j]['link'][0]['$text']
+    
+    k=randint(0,1)
+    
+    if stories[j].has_key('teaser') and k==0:
+        message=stories[j]['teaser']['$text']
+        message=trimMessage(message, lengths[topic_keys[i]])
         
-    response=templates[j].format(celeb=name, user=user, message=message, link=link)
+    else:
+        message=stories[j]['text']['paragraph'][0]['$text']
+        message=trimMessage(message, lengths[topic_keys[i]])
+        
+    response=templates[topic_keys[i]].format(celeb=name, user=user, message=message, link=link)
+    
     return response
+
 
 def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()):
     url_line='http://api.npr.org/query'
-    params = {'meta':'none',
-          'id': ','.join(['358046323','173814508','156490415','1008','1060','1049','1025','1052','1136','1129',
-                          '1024','1007','1004','1056']),
-          'fields':','.join(['storyDate,text','listText','pullQuote','teaser','miniTeaser','title']), 
+    def getParamDict():
+        params = {'meta':'none',
+          'id':'{topic}',
+          'fields':','.join(['storyDate','text','listText','pullQuote','teaser','title']), 
           'requiredAssets':'image',
           'startDate':str(startDate),
           'endDate':str(endDate),
           'dateType':'story',
           'sort':'featured',
-          'action':'Or',
           'output':'JSON', 
           'numResults':'40',
           'apiKey':'MDE3NDQzNTkzMDE0MTYxOTA0OTQyYjgzYw001'}
+        return params
           
-          #358046323, #Color Decoded: Stories That Span The Spectrum
+   
+    topic_list=['358046323','173814508','156490415','1008','1060','1049','1025','1052','1136','1129',
+                                        '1024','1007','1004','1056']
+    
+    params_dict={}
+    for topic in topic_list:
+        params=getParamDict()
+        params['id']=params['id'].format(topic=topic)
+        params_dict[topic]=params
+    
+   
+        
+    story_dict_json={ p: requests.get(url_line, params=params_dict[p]).json()
+                                      for p in params_dict}       
+    
+    story_dict={topic:story_dict_json[topic]['list']['story']
+                        for topic in story_dict_json 
+                            if story_dict_json[topic]['list'].has_key('story')}
+        
+    
+        
+        
+        
+         #358046323, #Color Decoded: Stories That Span The Spectrum
           #173814508,#The Race Card Project: Six-Word Essays
           #156490415,#Joe's Big Idea
           #1008,#Arts & Life
@@ -205,10 +214,8 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
           #1007,#Science
           #1004,#World
           #1056, #World Story of the Day
-    r = requests.get(url_line, params=params)
-    r_json=r.json()
-    stories=r_json['list']['story']
-    return stories
+
+    return story_dict
 
 
 
@@ -261,32 +268,41 @@ if __name__ == "__main__":
     bot_id= 2878685726 #GetRealCeleb bot
     #bot_id=bot.account.verify_credentials()['id']
     print bot_id
+    last_tweet='0'
     
     user_ids={ 'date': datetime.utcnow(), 'id_list':[]}
     if os.path.exists("responded_list.txt") and os.path.getsize('responded_list.txt') > 0:
 		f = file("responded_list.txt", "r")
+		last_tweet=f.readline()
 		user_ids['date'] = datetime.strptime(f.readline(), '%x %X\n')
 		user_ids['id_list']=[line.strip() for line in f.readlines()]
 		f.close()
+    
+    stories=getNPRStories()
     
     
     print user_ids['date'], user_ids['id_list']
     #main loop. Just keep searching anyone talking to us
 	#a specific user will only get one response per day 
     while True:
-        stories=getNPRStories()
+ 
         if (user_ids['date']-datetime.utcnow()).days>=1:
             user_ids['date']=datetime.utcnow()
             user_ids['id_list']=[]
-        
+            stories=getNPRStories()
+            
         try:
-            name_list=['britney spears', 'justin bieber', 'katy perry', 'taylor swift']
-            id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=1)
+            
+            name_list=['katy perry']
+            id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=20)
+        
             
             id_list_str={tweet_id:name 
-                                for name in id_list_str 
-                                    for tweet_id in id_list_str[name]}
-
+                               for name in id_list_str 
+                                   for tweet_id in id_list_str[name] if int(tweet_id)>int(last_tweet)}
+            if len(id_list_str)>0:
+                    last_tweet=str(max([int(t) for t in id_list_str]))
+            
 
             for id_str in id_list_str:
                         try:
@@ -309,7 +325,7 @@ if __name__ == "__main__":
                                 print "[+] " + speaker + " is saying " + message
                                 reply=getResponse2(id_list_str[id_str], 'color_blind_if' , stories)
                                 print "[+] Replying " , reply
-                                _id=532812179049676800 #would need to comment out once we have a real message
+                                #_id=532812179049676800 #would need to comment out once we have a real message
                                 make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                         
                             #===================================                 
@@ -324,7 +340,9 @@ if __name__ == "__main__":
                                 print "No one talking to us now...", time.ctime()
                         
                             mentions=[mentions[(len(mentions)-i-1)] for i in xrange(len(mentions))] #reverse the list
-                    
+                            
+                            theonion=make_twitter_request(bot.users.lookup, user_id=14075928)
+                            
                             for mention in mentions: 
                                 print mention['id'], last_id
                                 if mention['id'] > last_id and mention['user']['id']!=bot_id: #does not respond to itself
@@ -332,14 +350,17 @@ if __name__ == "__main__":
                                     message = mention['text'].replace(bot_name, '')
                                     speaker = mention['user']['screen_name']
                                     _id = mention['id']
-                                    speaker_id = str(mention['id'])
+                                    #speaker_id = str(mention['id'])
                                     print "[+] " + speaker + " is saying " + message
-                                    reply=getResponse2('', 'color_blind_if' , stories) 
+                                    #reply=getResponse2('', 'color_blind_if' , stories) 
+                                    reply='@'+speaker+'  @TheOnion '+theonion[0]['status']
+                                    if len(reply)>140:
+                                            reply=getResponse2('world', speaker , stories)
                                     print "[+] Replying " , reply
                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                 
                                                 
-                            sleep_int = 60 #downtime interval in seconds
+                            sleep_int = 5 #downtime interval in seconds
                             print "Sleeping...\n"
                             time.sleep(sleep_int)
         
@@ -353,6 +374,7 @@ if __name__ == "__main__":
         except KeyboardInterrupt:
                 print"[!] Cleaning up. last_id was ", last_id
                 with open('responded_list.txt','w') as f:
+                    f.write(last_tweet+'\n')
                     f.write(user_ids['date'].strftime('%x %X\n'))
                     for line in user_ids['id_list']:
                         f.write(line+'\n')     
