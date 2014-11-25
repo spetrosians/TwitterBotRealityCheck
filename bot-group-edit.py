@@ -1,5 +1,5 @@
-#from celeb_word_list import *
-#from aux_func import *
+from celeb_word_list import *
+from aux_func import *
 	
 
 from twitter.api import Twitter, TwitterError
