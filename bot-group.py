@@ -340,7 +340,7 @@ if __name__ == "__main__":
                     search_lim+=3        
                     
                     
-                tweet_list.extend(id_list_str.keys())
+                to_respond=id_list_str.keys()
             
             #if len(id_list_str)>0:
             #        last_tweet=str(max([int(t) for t in id_list_str]))
@@ -354,6 +354,7 @@ if __name__ == "__main__":
 
             if len(to_respond)!=0:
                             last_tweet=to_respond.pop()
+                            tweet_list.append(last_tweet)
  
             #for id_str in id_list_str:
                       #  try:
