@@ -1,6 +1,16 @@
 from celeb_word_list import *
 from aux_func import *
-	
+import os
+import sys
+import time
+import json
+import twitter
+import re
+import pymongo
+import exceptions
+import requests
+from datetime import date, datetime, timedelta
+from random import randint
 
 from twitter.api import Twitter, TwitterError
 from twitter.oauth import OAuth, write_token_file , read_token_file
