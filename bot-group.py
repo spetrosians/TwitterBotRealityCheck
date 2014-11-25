@@ -231,8 +231,7 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
 
 
 def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
-    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], conn, limit)]
-														for name in name_list}
+    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], conn, limit)] for name in name_list}
     return to_respond
 
 # Connection to Mongo DB
@@ -263,6 +262,7 @@ def searchMongo(name,word_list,conn, limit=10):
     no_list.append(re.compile(r'http', re.I))
 
     query={'text':{'$in':yes_list, '$nin':no_list}}
+    print 'got tweets for '+ str(name)
     
     return list(conn.find(query).limit(limit))
 
@@ -274,7 +274,7 @@ if __name__ == "__main__":
     last_status='0'
     tweet_list=[]
     search_more=False
-    search_lim=3
+    search_lim=1
     conn=pymongo.MongoClient()['twitter']['lines']
     
 
@@ -328,6 +328,7 @@ if __name__ == "__main__":
             name_list=['katy perry','justin bieber', 'britney spears']
             
             if len(to_respond)==0:
+                print 'searching for tweets'
                 id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=search_lim)
         
             
@@ -340,14 +341,15 @@ if __name__ == "__main__":
                                     for tweet_id in id_list_str[name] if tweet_id not in tweet_list}
                                     
                 if len(id_list_str)==0:
-                        search_lim+=3        
+                        search_lim+=1        
                     
-                    
-                to_respond=id_list_str.keys()
-                if len(tweet_list)>0 and len(to_respond)>0: 
-                    max_last_tweet=str(max([int(t) for t in tweet_list]))
-                    if int(to_respond[0])>int(max_last_tweet):
-                        search_lim=3
+                 
+                else:
+                    to_respond=id_list_str.keys()
+                    if len(tweet_list)>0: 
+                        max_last_tweet=str(max([int(t) for t in tweet_list]))
+                        if int(to_respond[0])>int(max_last_tweet):
+                            search_lim=1
             
             #if len(id_list_str)>0:
             #        last_tweet=str(max([int(t) for t in id_list_str]))
@@ -401,7 +403,7 @@ if __name__ == "__main__":
                             
                             for mention in mentions: 
                                 print mention['id'], last_status
-                                if mention['id'] > last_id and mention['user']['id']!=bot_id: #does not respond to itself
+                                if mention['id'] > last_status and mention['user']['id']!=bot_id: #does not respond to itself
                                     print 'current mention_id ',mention['id']
                                     message = mention['text'].replace(bot_name, '')
                                     speaker = mention['user']['screen_name']
