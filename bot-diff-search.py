@@ -428,8 +428,8 @@ if __name__ == "__main__":
                                 theonion=make_twitter_request(bot.users.lookup, user_id=14075928)
                             
                                 for mention in mentions: 
-                                    print mention['id'], last_status
-                                    if mention['id'] > last_status and mention['user']['id']!=bot_id: #does not respond to itself
+                                  #  print mention['id'], last_status
+                                    if mention['id'] > int(last_status) and mention['user']['id']!=bot_id: #does not respond to itself
                                         print 'current mention_id ',mention['id']
                                         message = mention['text'].replace(bot_name, '')
                                         speaker = mention['user']['screen_name']
@@ -465,7 +465,7 @@ if __name__ == "__main__":
                             #then respond to all the mentions (based on the last reply)
                             #===========================================
                 if last_status!='0':
-                        mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_status)
+                        mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=int(last_status))
                 else:
                         mentions = make_twitter_request(bot.statuses.mentions_timeline)
         
@@ -480,7 +480,7 @@ if __name__ == "__main__":
                             
                     for mention in mentions: 
                             print mention['id'], last_status
-                            if mention['id'] > last_status and mention['user']['id']!=bot_id: #does not respond to itself
+                            if mention['id'] > int(last_status) and mention['user']['id']!=bot_id: #does not respond to itself
                                     print 'current mention_id ',mention['id']
                                     message = mention['text'].replace(bot_name, '')
                                     speaker = mention['user']['screen_name']
