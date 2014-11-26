@@ -13,6 +13,7 @@ from datetime import date, datetime, timedelta
 from random import randint
 import pickle as pkl
 
+
 from twitter.api import Twitter, TwitterError
 from twitter.oauth import OAuth, write_token_file , read_token_file
 from twitter.oauth_dance import oauth_dance
@@ -255,13 +256,20 @@ def searchMongo(name,word_list,conn, limit=10):
     
     
 def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
+    print limit
+    
     re_names=[re.compile(r'{0}\s?{1}'.format(splitName(name)[0], splitName(name)[1]), re.I) 
                                             for name in name_list]
     
     results=list(conn.find(getQuery(name_list, celeb_word_list)).limit(limit))
+    print 'results',results
+    print 're_names', re_names
     
     to_respond={tweet['id_str']:name for tweet in results 
-                                        for r,name in zip(re_names,name_list) if re.search(name, tweet['id_str'])}
+                                        for r,name in zip(re_names,name_list) if re.search(r, tweet['text'])}
+     
+    print to_respond                                   
+                                        
     return to_respond    
 
 def getQuery(name_list, word_list):
@@ -347,9 +355,7 @@ if __name__ == "__main__":
     
     while True:
  
-        try:
-            
-            
+        try:     
           
             if (user_ids['date']-datetime.utcnow()).days>=1:
                 user_ids['date']=datetime.utcnow()
@@ -364,19 +370,10 @@ if __name__ == "__main__":
             if len(to_respond)==0:
                 print 'searching for tweets'
                 id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=search_lim)
-        
-            
-            #id_list_str={tweet_id:name 
-            #                   for name in id_list_str 
-            #                       for tweet_id in id_list_str[name] if int(tweet_id)>int(last_tweet)}
-            
-                #id_list_str={tweet_id:name 
-                #            for name in id_list_str 
-                #                    for tweet_id in id_list_str[name] if tweet_id not in tweet_list}
+                print id_list_str
                                     
                 if len(id_list_str)==0:
-                        search_lim+=10        
-                    
+                        search_lim+=10                  
                  
                 else:
                     to_respond=id_list_str.keys()
@@ -385,18 +382,12 @@ if __name__ == "__main__":
                         if int(to_respond[0])>int(max_last_tweet):
                             search_lim=10
             
-            #if len(id_list_str)>0:
-            #        last_tweet=str(max([int(t) for t in id_list_str]))
-            
 
         
 
             if len(to_respond)!=0:
                             last_tweet=to_respond.pop()
                             
- 
-            #for id_str in id_list_str:
-                      #  try:
                             status = make_twitter_request(bot.statuses.user_timeline)
                             if len(status) > 0:
                                 last_status = status[0]['id_str']
@@ -424,7 +415,7 @@ if __name__ == "__main__":
                             #then respond to all the mentions (based on the last reply)
                             #===========================================
                             if last_status!='0':
-                                mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=last_status)
+                                mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=int(last_status))
                             else:
                                 mentions = make_twitter_request(bot.statuses.mentions_timeline)
         
@@ -432,9 +423,6 @@ if __name__ == "__main__":
                                 print "No one talking to us now...", time.ctime()
                                 
                             else:
-                                
-                        
-                                # mentions=[mentions[(len(mentions)-i-1)] for i in xrange(len(mentions))] #reverse the list
                                 
                                 mentions.reverse()
                                 theonion=make_twitter_request(bot.users.lookup, user_id=14075928)
@@ -461,14 +449,11 @@ if __name__ == "__main__":
                                
                                                                  
                             sleep_int = 60*2#downtime interval in seconds
-                            print "Sleeping...\n"
+                             
+                            
+                            "Sleeping...\n"
                             time.sleep(sleep_int)
-        
-                        #except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
-                        #        print e
-                        #        sleep_int = 60 #downtime interval in seconds
-                        #        print "Sleeping...error\n"
-                        #        time.sleep(sleep_int)
+    
                         
             else:
                 status = make_twitter_request(bot.statuses.user_timeline)
@@ -526,20 +511,23 @@ if __name__ == "__main__":
             
         except KeyboardInterrupt:
                 print"[!] Cleaning up. last_id was ", last_tweet
-                with open('responded_list.txt','w') as f:
-                    f.write('last '+last_tweet+'\n')
-                    f.write('first '+first_tweet+'\n')
-                    f.write('status '+last_status+'\n')
-                    f.write(user_ids['date'].strftime('%x %X\n'))
-                    for line in user_ids['id_list']:
-                        f.write(line+'\n') 
+               
+                if len(tweet_list)>0:  #alternative
+                #if last_tweet!=0
+                    with open('responded_list.txt','w') as f:
+                        f.write('last '+last_tweet+'\n')
+                        f.write('first '+first_tweet+'\n')
+                        f.write('status '+last_status+'\n')
+                        f.write(user_ids['date'].strftime('%x %X\n'))
+                        for line in user_ids['id_list']:
+                            f.write(line+'\n') 
                         
-                print tweet_list        
-                with open('responded_pkl','w') as f:
-                    pkl.dump(tweet_list, f)
-                with open('tweet_list.txt','w') as f:
-                    for line in tweet_list:
-                        f.write(line+'\n') 
+                    print tweet_list        
+                    with open('responded_pkl','w') as f:
+                        pkl.dump(tweet_list, f)
+                    with open('tweet_list.txt','w') as f:
+                        for line in tweet_list:
+                            f.write(line+'\n') 
                         
                 sys.exit()
                 
