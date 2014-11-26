@@ -318,6 +318,7 @@ if __name__ == "__main__":
     search_more=False
     search_lim=10
     conn=pymongo.MongoClient()['twitter']['lines']
+    sleep_int=60
     
 
     bot = oauth_login()
@@ -371,16 +372,20 @@ if __name__ == "__main__":
                 print 'searching for tweets'
                 id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=search_lim)
                 print id_list_str
+                print 'getting rid of the tweets we already responded to', time.ctime()
+                id_list_str={tweet_id:id_list_stream [tweet_id] for tweet_id in id_list_stream if tweet_id not in tweet_list}
                                     
-                if len(id_list_str)==0:
+                if len(id_list_str)==0:  #everything was a repeat
                         search_lim+=10                  
                  
-                else:
+                else:                               #otherwise, get a respond lis
                     to_respond=id_list_str.keys()
-                    if len(tweet_list)>0: 
+                    if len(tweet_list)>0:           # and see if mongoDB has new entries
                         max_last_tweet=str(max([int(t) for t in tweet_list]))
-                        if int(to_respond[0])>int(max_last_tweet):
+                        if int(to_respond[0])>int(max_last_tweet): #if it does, roll back to searching 10 tweets per search
                             search_lim=10
+                        else:
+                            search_lim+=10   #if it doesn't, increment the search by 10
             
 
         
@@ -400,8 +405,11 @@ if __name__ == "__main__":
 
                             if mention!=None:
                                 if mention['user']['id_str'] in user_ids['id_list']: #check if the user has been responded to in the past 24 hours
-                                            tweet_list.append(last_tweet)   
-                                else:            
+                                            #tweet_list.append(last_tweet)
+                                            sleep_int=15
+                                            print time.ctime(), 'appending the tweet to whose user we already responded today', mention['text'], last_tweet, tweet_list   
+                                else:
+                                    sleep_int=2*60            
                                     user_ids['id_list'].append(mention['user']['id_str'])
                                     message = mention['text']
                                     speaker = mention['user']['screen_name']
@@ -412,7 +420,7 @@ if __name__ == "__main__":
                                     #_id=532812179049676800 #would need to comment out once we have a real message
                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                     tweet_list.append(last_tweet)
-                        
+                                    print time.ctime(), 'appending the tweet', mention['text'], last_tweet, tweet_list
                             #===================================                 
                             #then respond to all the mentions (based on the last reply)
                             #===========================================
@@ -430,7 +438,7 @@ if __name__ == "__main__":
                                 theonion=make_twitter_request(bot.users.lookup, user_id=14075928)
                             
                                 for mention in mentions: 
-                                  #  print mention['id'], last_status
+                                  #  print mention['id'], last_status, time.ctime(), 'mentions1'
                                     if mention['id'] > int(last_status) and mention['user']['id']!=bot_id: #does not respond to itself
                                         print 'current mention_id ',mention['id']
                                         message = mention['text'].replace(bot_name, '')
@@ -450,9 +458,7 @@ if __name__ == "__main__":
                                 
                                
                                                                  
-                            sleep_int = 60*2#downtime interval in seconds
-                             
-                            
+                            #sleep_int = 60*2#downtime interval in seconds 
                             "Sleeping...\n"
                             time.sleep(sleep_int)
     
@@ -481,7 +487,7 @@ if __name__ == "__main__":
                     theonion=make_twitter_request(bot.users.lookup, user_id=14075928)
                             
                     for mention in mentions: 
-                            print mention['id'], last_status
+                            print mention['id'], last_status, time.ctime(), 'mentions2'
                             if mention['id'] > int(last_status) and mention['user']['id']!=bot_id: #does not respond to itself
                                     print 'current mention_id ',mention['id']
                                     message = mention['text'].replace(bot_name, '')
