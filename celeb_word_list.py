@@ -69,5 +69,5 @@ name_list=['ashton kutcher',
 'oprah winfrey',
 'rihanna',
 'selena gomez',
-'shakira'
+'shakira',
 'taylor swift']
