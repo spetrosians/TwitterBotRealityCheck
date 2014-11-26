@@ -373,7 +373,7 @@ if __name__ == "__main__":
                 id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=search_lim)
                 print id_list_str
                 print 'getting rid of the tweets we already responded to', time.ctime()
-                id_list_str={tweet_id:id_list_stream [tweet_id] for tweet_id in id_list_stream if tweet_id not in tweet_list}
+                id_list_str={tweet_id:id_list_str[tweet_id] for tweet_id in id_list_str if tweet_id not in tweet_list}
                                     
                 if len(id_list_str)==0:  #everything was a repeat
                         search_lim+=10                  
