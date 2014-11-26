@@ -329,10 +329,10 @@ if __name__ == "__main__":
     
 
     if os.path.exists("responded_list.txt") and os.path.getsize('responded_list.txt') > 0:
-		f = file("responded_list.txt", "r")
-		last_tweet=f.readline().split(' ')[1]
-		first_tweet=f.readline().split(' ')[1]
-		last_status=f.readline().split(' ')[1]
+		f = open("responded_list.txt", "r")
+		last_tweet=f.readline().split(' ')[1].strip()
+		first_tweet=f.readline().split(' ')[1].strip()
+		last_status=f.readline().split(' ')[1].strip()
 		user_ids['date'] = datetime.strptime(f.readline(), '%x %X\n')
 		user_ids['id_list']=[line.strip() for line in f.readlines()]
 		f.close()
