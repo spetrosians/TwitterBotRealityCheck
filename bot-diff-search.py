@@ -515,9 +515,9 @@ if __name__ == "__main__":
                 if len(tweet_list)>0:  #alternative
                 #if last_tweet!=0
                     with open('responded_list.txt','w') as f:
-                        f.write('last '+last_tweet+'\n')
-                        f.write('first '+first_tweet+'\n')
-                        f.write('status '+last_status+'\n')
+                        f.write('last '+last_tweet.strip()+'\n')
+                        f.write('first '+first_tweet.strip()+'\n')
+                        f.write('status '+last_status.strip()+'\n')
                         f.write(user_ids['date'].strftime('%x %X\n'))
                         for line in user_ids['id_list']:
                             f.write(line+'\n') 
