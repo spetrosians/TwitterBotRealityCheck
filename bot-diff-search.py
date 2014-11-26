@@ -298,9 +298,9 @@ def getRegex(name, word_list):
     
     yes_list=[ re.compile(format_line.format(first=first, last=last, word=word), re.I)
                         for word in word_list['yes']] 
-    no_list=[ re.compile(format_line.format(first=first, last=last, word=word), re.I)
-                                for word in word_list['no']] 
-    no_list.append(re.compile(format_line.format(first=first, last=last, word=r'http'), re.I))
+    
+    no_list=[re.compile(word, re.I) for word in word_list['no']] 
+    no_list.append(re.compile(r'http', re.I))
     
     return yes_list, no_list
     
@@ -317,7 +317,7 @@ if __name__ == "__main__":
     tweet_list=[]
     search_more=False
     search_lim=10
-    conn=pymongo.MongoClient()['twitter']['lines']
+    conn=connectMongo()['twitter']['lines']
     sleep_int=60
     
 
