@@ -293,30 +293,51 @@ def splitName(name):
     return first, last
               
 def getRegex(name, word_list):
+    
     first,last=splitName(name)         
     format_line=r'({word}.*{first}\s?{last})|({first}\s?{last}.*{word})'
+    line1=r'({word}.*{first}\s?{last})'
+    line2=r'({first}\s?{last}.*{word})'
+    lines=[line1, line2]
+    
     
     yes_list=[ re.compile(format_line.format(first=first, last=last, word=word), re.I)
                         for word in word_list['yes']] 
+    if len(word_list['yes'])==0:
+        yes_list=[re.compile(r'{first}\s?{last}'.format(first=first, last=last,word=''),re.I)]
     
-    no_list=[re.compile(word, re.I) for word in word_list['no']] 
-    no_list.append(re.compile(r'http', re.I))
+    word_list['no'].append('http') 
+    word_list['no'].append(r'\n\n\n\n')   
     
+    no_list=[re.compile(line.format(first=first,last=last, word=word), re.I) 
+                         for word in word_list['no'] if len(word)!=0
+                                         for line in lines] 
+
     return yes_list, no_list
     
-    
-    
+
+def isAscii(mystring):
+    try:
+        mystring.decode('ascii')
+    except UnicodeDecodeError:
+        print "it was not a ascii-encoded unicode string"
+        return False
+    else:
+        print "It may have been an ascii-encoded unicode string"
+        return True
     
 
 if __name__ == "__main__":
 
     user_ids={'date':datetime.utcnow(), 'id_list':[]}
+    nrp_query_time=datetime.utcnow()
     last_tweet='0'
     first_tweet='0'
     last_status='0'
     tweet_list=[]
     search_more=False
-    search_lim=10
+    SEARCH_LIM=10
+    search_lim=SEARCH_LIM
     conn=connectMongo()['twitter']['lines']
     sleep_int=60
     
@@ -335,6 +356,7 @@ if __name__ == "__main__":
 		first_tweet=f.readline().split(' ')[1].strip()
 		last_status=f.readline().split(' ')[1].strip()
 		user_ids['date'] = datetime.strptime(f.readline(), '%x %X\n')
+		nrp_query_time = datetime.strptime(f.readline(), '%x %X\n')
 		user_ids['id_list']=[line.strip() for line in f.readlines()]
 		f.close()
     
@@ -358,9 +380,11 @@ if __name__ == "__main__":
  
         try:     
           
-            if (user_ids['date']-datetime.utcnow()).days>=1:
+            if (user_ids['date']-datetime.utcnow()).days>=7:
                 user_ids['date']=datetime.utcnow()
                 user_ids['id_list']=[]
+           
+            if (nrp_query_time-datetime.utcnow())>1:
                 stories=getNPRStories()
             
             if stories==None:
@@ -376,16 +400,16 @@ if __name__ == "__main__":
                 id_list_str={tweet_id:id_list_str[tweet_id] for tweet_id in id_list_str if tweet_id not in tweet_list}
                                     
                 if len(id_list_str)==0:  #everything was a repeat
-                        search_lim+=10                  
+                        search_lim+=SEARCH_LIM                  
                  
                 else:                               #otherwise, get a respond lis
                     to_respond=id_list_str.keys()
                     if len(tweet_list)>0:           # and see if mongoDB has new entries
                         max_last_tweet=str(max([int(t) for t in tweet_list]))
                         if int(to_respond[0])>int(max_last_tweet): #if it does, roll back to searching 10 tweets per search
-                            search_lim=10
+                            search_lim=SEARCH_LIM
                         else:
-                            search_lim+=10   #if it doesn't, increment the search by 10
+                            search_lim+=SEARCH_LIM   #if it doesn't, increment the search by 10
             
 
         
@@ -404,10 +428,13 @@ if __name__ == "__main__":
                             mention=make_twitter_request(bot.statuses.show,_id=int(last_tweet))
 
                             if mention!=None:
-                                if mention['user']['id_str'] in user_ids['id_list']: #check if the user has been responded to in the past 24 hours
+                                if mention['user']['id_str'] in user_ids['id_list']: #check if the user has been responded to in the past 7 days
                                             #tweet_list.append(last_tweet)
                                             sleep_int=15
-                                            print time.ctime(), 'appending the tweet to whose user we already responded today', mention['text'], last_tweet, tweet_list   
+                                            print time.ctime()
+                                
+                                elif  not isAscii(mention['text']):
+                                          tweet_list.append(last_tweet)                      
                                 else:
                                     sleep_int=2*60            
                                     user_ids['id_list'].append(mention['user']['id_str'])
@@ -527,6 +554,7 @@ if __name__ == "__main__":
                         f.write('first '+first_tweet.strip()+'\n')
                         f.write('status '+last_status.strip()+'\n')
                         f.write(user_ids['date'].strftime('%x %X\n'))
+                        f.write(nrp_query_time.strftime('%x %X\n')) 
                         for line in user_ids['id_list']:
                             f.write(line+'\n') 
                         
