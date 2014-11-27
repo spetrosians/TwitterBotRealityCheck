@@ -273,14 +273,16 @@ def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
     return to_respond    
 
 def getQuery(name_list, word_list):
-    query={'text':{'$in': [] , '$nin':[]}}
+    query={'$and': [{'$or': []} ,
+                     {'$nor':[]} 
+                    ]}
+       
     for name in name_list:
         regex_list=getRegex(name, word_list[name])
-        query['text']['$in'].extend(regex_list[0])
-        query['text']['$nin'].extend(regex_list[1])
+        query['$and'][0]['$or'].extend([{'text':r } for r in regex_list[0]])
+        query['$and'][1]['$nor'].extend([{'text':r } for r in regex_list[1]])
     
-    return query
-  
+    return query  
 
 def splitName(name):
     name=name.split(' ')
@@ -322,6 +324,8 @@ def isAscii(mystring):
     except UnicodeDecodeError:
         print "it was not a ascii-encoded unicode string"
         return False
+    except:
+        
     else:
         print "It may have been an ascii-encoded unicode string"
         return True
@@ -336,7 +340,7 @@ if __name__ == "__main__":
     last_status='0'
     tweet_list=[]
     search_more=False
-    SEARCH_LIM=10
+    SEARCH_LIM=5
     search_lim=SEARCH_LIM
     conn=connectMongo()['twitter']['lines']
     sleep_int=60
@@ -384,7 +388,7 @@ if __name__ == "__main__":
                 user_ids['date']=datetime.utcnow()
                 user_ids['id_list']=[]
            
-            if (nrp_query_time-datetime.utcnow())>1:
+            if (nrp_query_time-datetime.utcnow()).days>1:
                 stories=getNPRStories()
             
             if stories==None:
@@ -433,7 +437,7 @@ if __name__ == "__main__":
                                             sleep_int=15
                                             print time.ctime()
                                 
-                                elif  not isAscii(mention['text']):
+                                elif not isAscii(mention['text']):
                                           tweet_list.append(last_tweet)                      
                                 else:
                                     sleep_int=2*60            
