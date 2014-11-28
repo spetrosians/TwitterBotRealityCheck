@@ -625,7 +625,7 @@ if __name__ == "__main__":
                                                 reply=getResponse2('world', speaker , stories)
                                                 print "[+] Replying " , reply
                                                 make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                                             except exceptions.BaseException, e:
+                                            except exceptions.BaseException, e:
                                                 reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
                                                 print "[+] Replying " , reply
                                                 make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
