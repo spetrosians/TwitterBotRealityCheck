@@ -506,7 +506,8 @@ if __name__ == "__main__":
                                     
                                     message = mention['text']
                                     speaker = mention['user']['screen_name']
-                                    _id=mention['id']
+                                    #_id=mention['id']
+                                    _id=int(last_tweet)
                                     print "[+] " + speaker + " is saying " + message
                                     reply=getResponse2(id_list_str[last_tweet], speaker , stories)
                                     print "[+] Replying " , reply
