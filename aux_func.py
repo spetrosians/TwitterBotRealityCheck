@@ -2,6 +2,7 @@ import exceptions
 import pymongo
 import re
 
+
 def textFileForCeleb(name, limit):
 
     name=name.split(' ')

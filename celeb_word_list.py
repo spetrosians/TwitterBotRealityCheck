@@ -1,6 +1,7 @@
 #paste the dictionary
 
 
+
 celeb_word_list={
  'rihanna': 
     {'yes':['love', 'like', 'chris', 'single', 'bravo', 'album', 'girl', 'music', 'song', 'eminem', 'amas', 'life', 'dinner', 'fan', 'people'],
