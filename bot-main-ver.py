@@ -478,7 +478,7 @@ if __name__ == "__main__":
 
         
 
-            if len(to_respond)!=0:
+            if len(to_respond)!=0: #possible error lurking
                             last_tweet=to_respond.pop()
                             print last_tweet,'to respond',to_respond
                             
@@ -563,9 +563,12 @@ if __name__ == "__main__":
                                                     print "[+] Replying " , reply
                                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                                 except exceptions.BaseException, e:
-                                                    reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
-                                                    print "[+] Replying " , reply
-                                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                                    try:
+                                                        reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
+                                                        print "[+] Replying " , reply
+                                                        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                                    except:
+                                                        pass
                                 
                                
                                                                  
@@ -626,9 +629,12 @@ if __name__ == "__main__":
                                                 print "[+] Replying " , reply
                                                 make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                             except exceptions.BaseException, e:
-                                                reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
-                                                print "[+] Replying " , reply
-                                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                                try:
+                                                    reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
+                                                    print "[+] Replying " , reply
+                                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                                except:
+                                                    pass
                                
                                                                  
                 sleep_int = 60#downtime interval in seconds
