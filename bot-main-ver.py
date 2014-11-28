@@ -507,12 +507,11 @@ if __name__ == "__main__":
                                     message = mention['text']
                                     speaker = mention['user']['screen_name']
                                     _id=mention['id']
-                                    if _id!=None:
-                                            print "[+] " + speaker + " is saying " + message
-                                            reply=getResponse2(id_list_str[last_tweet], speaker , stories)
-                                            print "[+] Replying " , reply
-                                            #_id=532812179049676800 #would need to comment out once we have a real message
-                                            make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                    print "[+] " + speaker + " is saying " + message
+                                    reply=getResponse2(id_list_str[last_tweet], speaker , stories)
+                                    print "[+] Replying " , reply
+                                    #_id=532812179049676800 #would need to comment out once we have a real message
+                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                     tweet_list.append(last_tweet)
                                     write_tweet(last_tweet)
                                     print time.ctime(), 'appending the tweet', mention['text'], last_tweet, tweet_list
