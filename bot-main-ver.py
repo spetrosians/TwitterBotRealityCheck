@@ -231,10 +231,6 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
 
 
 
-def get_id_str_list_old(name_list, celeb_word_list, conn, limit=10):
-    to_respond={name:[tweet['id_str'] for tweet in searchMongo(name,celeb_word_list[name], conn, limit)] for name in name_list}
-    return to_respond
-
 # Connection to Mongo DB
 def connectMongo():
     try:
@@ -244,14 +240,7 @@ def connectMongo():
        print "Could not connect to MongoDB: %s" % e 
     return conn
 
-def searchMongo(name,word_list,conn, limit=10):
 
-
-
-    query={'text':{'$in':yes_list, '$nin':no_list}}
-    print 'got tweets for '+ str(name)
-    
-    return list(conn.find(query).limit(limit))
     
     
     
@@ -327,28 +316,115 @@ def isAscii(mystring):
     else:
         print "It may have been an ascii-encoded unicode string"
         return True
+
     
+
+def write_tweet_list_pkl(tweet_list):
+    with open('responded_pkl','w') as f:
+            pkl.dump(tweet_list, f)
+
+def read_tweet_list_pkl():
+    tweet_list=[]
+    if os.path.exists("responded_pkl") and os.path.getsize('responded_pkl') > 0:
+        f = file("responded_pkl", "r")
+        tweet_list=pkl.load(f)
+        f.close()
+    return tweet_list
+    
+
+def read_tweet_list():
+    tweet_list=[]
+    if os.path.exists("tweet_list.txt") and os.path.getsize('tweet_list.txt') > 0:
+        f = file("tweet_list.txt", "r")
+        tweet_list=[line.strip() for line in f.readlines()]
+        f.close()
+    return tweet_list
+
+
+def write_tweet_list(tweet_list):
+    if len(tweet_list)>0:
+        with open('tweet_list.txt','w') as f:
+            for line in tweet_list:
+                f.write(line+'\n')
+        return True
+    return False
+                
+def write_tweet(tweet):
+    with open('tweet_list.txt','a') as f:
+            f.write(tweet+'\n')
+        
+
+def read_responded_list():
+    id_list=[]
+    if os.path.exists("responded_list.txt") and os.path.getsize('responded_list.txt') > 0:
+        f = open("responded_list.txt", "r")
+        id_list=[line.strip() for line in f.readlines()]
+        f.close()
+    return id_list  
+    
+    
+def write_responded_list(id_list):
+    if len(id_list)>0:
+        with open('responded_list.txt','w') as f:
+            for line in id_list:
+                        f.write(line+'\n') 
+        return True
+    return False
+
+def write_responded_id(user_id):
+    with open('responded_list.txt','a') as f:
+            f.write(user_id+'\n')
+
+def read_status():
+    user_date=datetime.utcnow()
+    npr_query_time=datetime.utcnow()
+    last_tweet='0' #first tweet responded overal
+    first_tweet='0' #last tweet responded overal
+    last_status='0'    #last tweet responded to
+    if os.path.exists("status.txt") and os.path.getsize('status.txt') > 0:
+        with open('status.txt','r') as f:
+            last_tweet=f.readline().split(' ')[1].strip()
+            first_tweet=f.readline().split(' ')[1].strip()
+            last_status=f.readline().split(' ')[1].strip()
+            user_date = datetime.strptime(f.readline(), 'user_date %x %X\n')
+            npr_query_time = datetime.strptime(f.readline(), 'npr_date %x %X\n')
+    return last_tweet, first_tweet,last_status,user_date, npr_query_time
+
+def write_status(last_tweet, first_tweet,last_status, user_date, npr_query_time):
+    with open('status.txt','w') as f:
+            f.write('last '+last_tweet.strip()+'\n')
+            f.write('first '+first_tweet.strip()+'\n')
+            f.write('status '+last_status.strip()+'\n')
+            f.write(user_date.strftime('user_date %x %X\n'))
+            f.write(npr_query_time.strftime('npr_date %x %X\n')) 
+            
+                    
 
 if __name__ == "__main__":
 
-    user_ids={'date':datetime.utcnow(), 'id_list':[]}
-    nrp_query_time=datetime.utcnow()
-    last_tweet='0'
-    first_tweet='0'
-    last_status='0'
-    tweet_list=[]
-    search_more=False
-    SEARCH_LIM=5
+    
+    last_tweet, first_tweet,last_status,user_date, npr_query_time=read_status()
+    tweet_list=read_tweet_list() #read the list of the tweet ids that were responded 
+    user_id_list=read_responded_list() #read the list of user ids who were already responded
+    
+    user_ids={'date':user_date, 'id_list':user_id_list}
+      
+    SEARCH_LIM=5  #const
+    SLEEP_INT_RESP=60*5 #const - break between posting the interference tweets
+    SLEEP_INT_MENT=60 #const - break between responses to mentions
+    
     search_lim=SEARCH_LIM
-    conn=connectMongo()['twitter']['lines']
-    SLEEP_INT_RESP=60*5
-    sleep_int=60
-    break_int_resp=datetime.utcnow()
-    break_int_mention=datetime.utcnow()
-    SLEEP_INT_MENT=60
+    
+    sleep_int=60 #system sleep time
+    
+    break_int_resp=datetime.utcnow() #last time interference tweets were posted
+    break_int_mention=datetime.utcnow() #last time responded to mentions
+
 
     
-
+    conn=connectMongo()['twitter']['lines']
+    stories=getNPRStories()
+    
     bot = oauth_login()
     bot_name ='@'+bot.account.verify_credentials()['screen_name'] #put your actual bot's name here
     print bot_name
@@ -356,32 +432,11 @@ if __name__ == "__main__":
     print bot_id
 
     
-
-    if os.path.exists("responded_list.txt") and os.path.getsize('responded_list.txt') > 0:
-		f = open("responded_list.txt", "r")
-		last_tweet=f.readline().split(' ')[1].strip()
-		first_tweet=f.readline().split(' ')[1].strip()
-		last_status=f.readline().split(' ')[1].strip()
-		user_ids['date'] = datetime.strptime(f.readline(), '%x %X\n')
-		nrp_query_time = datetime.strptime(f.readline(), '%x %X\n')
-		user_ids['id_list']=[line.strip() for line in f.readlines()]
-		f.close()
-    
-    
-    if os.path.exists("responded_pkl") and os.path.getsize('responded_pkl') > 0:
-		f = file("responded_pkl", "r")
-                tweet_list=pkl.load(f)
-		f.close()    
     
     print 'tweet_list', tweet_list
-    
-    stories=getNPRStories()
-    
-    
     print user_ids['date'], user_ids['id_list']
-    #main loop. Just keep searching anyone talking to us
-	#a specific user will only get one response per day 
-    to_respond=[]
+    
+    to_respond=[] #list of tweet ids to respond to
     
     while True:
  
@@ -389,15 +444,16 @@ if __name__ == "__main__":
           
             if (datetime.utcnow()-user_ids['date']).days>=30:
                 user_ids['date']=datetime.utcnow()
-                user_ids['id_list']=[]
+                user_ids['id_list']=[] #not really functional because not being refreshed in the file, need to change later
            
-            if (datetime.utcnow()-nrp_query_time).days>=1:
+            if (datetime.utcnow()-npr_query_time).days>=1:
                 stories=getNPRStories()
-            
+                npr_query_time=datetime.utcnow()
+                write_status(last_tweet, first_tweet,last_status,user_ids['date'], npr_query_time)   
+                       
             if stories==None:
                 stories=getNPRStories()
-        
-            #name_list=['katy perry','justin bieber', 'britney spears', 'kim kardashian', 'miley cyrus', 'taylor swift']
+     
             
             if len(to_respond)==0:
                 print 'searching for tweets'
@@ -413,7 +469,8 @@ if __name__ == "__main__":
                     to_respond=id_list_str.keys()
                     if len(tweet_list)>0:           # and see if mongoDB has new entries
                         max_last_tweet=str(max([int(t) for t in tweet_list]))
-                        if int(to_respond[0])>int(max_last_tweet): #if it does, roll back to searching 10 tweets per search
+                        max_last_new_tweet=str(max([int(t) for t in to_respond]))
+                        if int(max_last_new_tweet)>int(max_last_tweet): #if it does, roll back to searching 10 tweets per search
                             search_lim=SEARCH_LIM
                         else:
                             search_lim+=SEARCH_LIM   #if it doesn't, increment the search by 10
@@ -423,6 +480,7 @@ if __name__ == "__main__":
 
             if len(to_respond)!=0:
                             last_tweet=to_respond.pop()
+                            print last_tweet,'to respond',to_respond
                             
                             status = make_twitter_request(bot.statuses.user_timeline)
                             if len(status) > 0:
@@ -439,12 +497,13 @@ if __name__ == "__main__":
                                             #tweet_list.append(last_tweet)
                                             #sleep_int=15
                                             print time.ctime()
-                                
-                                #elif not isAscii(mention['text']):
-                                #          tweet_list.append(last_tweet)                      
+                     
                                 elif (datetime.utcnow()-break_int_resp).seconds>SLEEP_INT_RESP:
                                     break_int_resp= datetime.utcnow()      
+                                    
                                     user_ids['id_list'].append(mention['user']['id_str'])
+                                    write_responded_id(mention['user']['id_str'])
+                                    
                                     message = mention['text']
                                     speaker = mention['user']['screen_name']
                                     _id=mention['id']
@@ -454,9 +513,11 @@ if __name__ == "__main__":
                                     #_id=532812179049676800 #would need to comment out once we have a real message
                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                     tweet_list.append(last_tweet)
+                                    write_tweet(last_tweet)
                                     print time.ctime(), 'appending the tweet', mention['text'], last_tweet, tweet_list
                                 else:
                                     to_respond.append(last_tweet)
+                                    print 'to respond',to_respond
                             #===================================                 
                             #then respond to all the mentions (based on the last reply)
                             #===========================================
@@ -555,32 +616,16 @@ if __name__ == "__main__":
                 time.sleep(sleep_int)
                         
                         
-                        
+            write_status(last_tweet, first_tweet,last_status,user_date, npr_query_time)            
                         
                         
                         
             
         except KeyboardInterrupt:
-                print"[!] Cleaning up. last_id was ", last_tweet
-               
-                if len(tweet_list)>0:  #alternative
-                #if last_tweet!=0
-                    with open('responded_list.txt','w') as f:
-                        f.write('last '+last_tweet.strip()+'\n')
-                        f.write('first '+first_tweet.strip()+'\n')
-                        f.write('status '+last_status.strip()+'\n')
-                        f.write(user_ids['date'].strftime('%x %X\n'))
-                        f.write(nrp_query_time.strftime('%x %X\n')) 
-                        for line in user_ids['id_list']:
-                            f.write(line+'\n') 
-                        
-                    print tweet_list        
-                    with open('responded_pkl','w') as f:
-                        pkl.dump(tweet_list, f)
-                    with open('tweet_list.txt','w') as f:
-                        for line in tweet_list:
-                            f.write(line+'\n') 
-                        
+                print"[!] Cleaning up. last_id was ", last_tweet       
+                print tweet_list        
+                write_status(last_tweet, first_tweet,last_status,user_ids['date'], npr_query_time)
+                write_tweet_list_pkl(tweet_list) #just in case, probably will delete it later           
                 sys.exit()
                 
         except exceptions.BaseException, e: #in case of some error/exception - just skipping that post
