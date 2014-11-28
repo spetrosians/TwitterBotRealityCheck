@@ -546,15 +546,21 @@ if __name__ == "__main__":
                                             #speaker_id = str(mention['id'])
                                             print "[+] " + speaker + " is saying " + message
                                             #reply=getResponse2('', 'color_blind_if' , stories) 
-                                            reply='@'+speaker+' @TheOnion '+theonion[0]['status']['text']
-                                            onion_image=''
-                                            if theonion[0]['status'].has_key('media_url'):
+                                            
+                                            try:
+                                                reply='@'+speaker+' @TheOnion '+theonion[0]['status']['text']
+                                                onion_image=''
+                                                if theonion[0]['status'].has_key('media_url'):
                                                     onion_image=theonion[0]['status']['media_url']
-                                                    print "[+] Replying with the onion"
-                                            if len(reply)>200:
+                                                print "[+] Replying with the onion"
+                                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id, media_url=onion_image)
+                                                    
+                                            except exceptions.BaseException, e:
+                                                    print e
+                                                    print 'something wrong with the onion'
                                                     reply=getResponse2('world', speaker , stories)
                                                     print "[+] Replying " , reply
-                                            make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id, media_url=onion_image)
+                                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                 
                                
                                                                  
