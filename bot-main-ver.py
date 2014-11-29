@@ -265,7 +265,7 @@ def getNPRStories(startDate=date.today()-timedelta(days=30), endDate=date.today(
           'dateType':'story',
           'sort':'featured',
           'output':'JSON', 
-          'numResults':'40',
+          'numResults':'100',
           'apiKey':'MDE3NDQzNTkzMDE0MTYxOTA0OTQyYjgzYw001'}
         return params
           
