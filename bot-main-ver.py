@@ -12,13 +12,17 @@ import requests
 from datetime import date, datetime, timedelta
 from random import randint
 import pickle as pkl
-
+from textblob import TextBlob
+import nltk
 
 from twitter.api import Twitter, TwitterError
 from twitter.oauth import OAuth, write_token_file , read_token_file
 from twitter.oauth_dance import oauth_dance
 from urllib2 import URLError
 from httplib import BadStatusLine
+
+
+nltk.data.path.append('/home/lagoda')
 
 #import any other natural processing libs
 # go to http://twitter.com/apps/new to create an app and get values
@@ -103,7 +107,22 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 
 
 
-def getResponse2(name, user, stories_dict,mention=False):
+
+def getSentences(story):
+        paragraphs=story['text']['paragraph']
+        text_list=[p['$text'] for p in paragraphs]
+        text='\n'.join(text_list)
+        blob=TextBlob(text)
+        most_colored=[(s.polarity, s.subjectivity, s.raw) for s in blob.sentences]
+        sents=[min(most_colored, key=lambda x: x[0])[2].replace('.',''),
+           max(most_colored, key=lambda x: x[0])[2].replace('.',''),
+           min(most_colored, key=lambda x: x[1])[2].replace('.',''),
+           max(most_colored, key=lambda x: x[1])[2].replace('.','')]
+        return sents
+
+    
+
+def nameToUpper(name):
     name=name.split(' ')
     if len(name)==2:
         name=name[0][0].upper()+name[0][1:]+' '+name[1][0].upper()+name[1][1:]
@@ -111,7 +130,28 @@ def getResponse2(name, user, stories_dict,mention=False):
         name=name[0][0].upper()+name[0][1:]
     else:
         name=name[0]
-        
+    return name    
+    
+    
+    
+def trimMessage(message, length):
+        message=message.encode("ascii", "ignore")
+        message=message.split('.')[0]
+        if len(message)>140-length:
+            words=message.split(' ')
+            message=words[0]
+            for w in words[1:]:
+                if len(message+' '+w)<=140-length:
+                    message=message+' '+w
+        return message
+
+    
+def getLine(topic):
+    line=getTopicDict()[topic]
+    return line
+
+def getTopicDict():
+    
     templates={'358046323':"@{user} {celeb} shares a colorful world with you. {message} {link}",
                 '173814508':"@{user} Even {celeb} doesn't have enough money to end racism. {message} {link}",
                 '156490415':"@{user} Do you think {celeb} can come up with an idea like this? {message} {link}",
@@ -126,51 +166,88 @@ def getResponse2(name, user, stories_dict,mention=False):
                 '1007':"@{user} what does the future hold? {celeb} or this AWSOME science! {message} {link}",
                 '1004':"@{user} There's more to life than {celeb}, check out what's happening around the world! {message} {link}",
                 '1056':"@{user} Here's a break from {celeb}, check out what's happening around the world! {message} {link}"}
- 
-    def trimMessage(message, length):
-        message=message.encode("ascii", "ignore")
-        message=message.split('.')[0]
-        if len(message)>140-length:
-            words=message.split(' ')
-            message=words[0]
-            for w in words[1:]:
-                if len(message+' '+w)<=140-length:
-                    message=message+' '+w
-        return message
-    
-    def getSentences(story):
-        paragraphs=story['text']['paragraph']
-        text_list=[p['$text'] for p in paragraphs]
-        text='\n'.join(text_list)
-        blob=TextBlob(text)
-        most_colored=[(s.polarity, s.subjectivity, s.raw) for s in blob.sentences]
-        sents=[min(most_colored, key=lambda x: x[0])[2].replace('.',''),
-           max(most_colored, key=lambda x: x[0])[2].replace('.',''),
-           min(most_colored, key=lambda x: x[1])[2].replace('.',''),
-           max(most_colored, key=lambda x: x[1])[2].replace('.','')]
-        return sents
-    
-    lengths={s:(len(templates[s].format(celeb=name, user=user, message='', link=''))+25)
-                             for s in templates}
-    topic_keys=stories_dict.keys() #get topics returned by the npr query
-    i=randint(0, len(topic_keys)-1) #choose random topic
-    stories=stories_dict[topic_keys[i]]
+                
+             #358046323, #Color Decoded: Stories That Span The Spectrum
+          #173814508,#The Race Card Project: Six-Word Essays
+          #156490415,#Joe's Big Idea
+          #1008,#Arts & Life
+          #1060,#Commentary
+          #1049,#Digital Life
+          #1025,#Environment
+          #1052,#Games & Humor
+          #1136,#History
+          #1129,#Humans
+          #1024,#Research News
+          #1007,#Science
+          #1004,#World
+          #1056, #World Story of the Day
+
+    return templates
+
+def getLength(line='', user='', name=''):
+   return (len(line.format(celeb=name, user=user, message='', link=''))+25)
+
+
+def getRandomStoryDict(stories_dict):
+    topics=stories_dict.keys()
+  #get topics returned by the npr query
+    i=randint(0, len(topics)-1) #choose random topic
+    stories=stories_dict[topics[i]]
     j=randint(0,len(stories)-1) #choose random story within the topic
-    link=stories[j]['link'][0]['$text']
+    
+    topic=topics[i]
+    story=stories[j]
+    line=getLine(topic)
+    
+    story_dict={'topic':topic,
+                'story':story,
+                'line':line,
+                }
+    
+    return story_dict
+
+
+
+    
+def getResponse2(name, user, stories_dict):
+    
+    name=nameToUpper(name)
+    
+    story_dict=getRandomStoryDict(stories_dict)
+    
+    link=story_dict['story']['link'][0]['$text']
+    length= getLength(story_dict['line'], user,name)
     
     k=randint(0,1)
     
-    if stories[j].has_key('teaser') and k==0:
-        message=stories[j]['teaser']['$text']
-        message=trimMessage(message, lengths[topic_keys[i]])
+    if story_dict['story'].has_key('teaser') and k==0:
+        message=story_dict['story']['teaser']['$text']
+        message=trimMessage(message, length)
         
     else:
-        message=stories[j]['text']['paragraph'][0]['$text']
-        message=trimMessage(message, lengths[topic_keys[i]])
+        message=story_dict['story']['text']['paragraph'][0]['$text']
+        message=trimMessage(message, length)
         
-    response=templates[topic_keys[i]].format(celeb=name, user=user, message=message, link=link)
+    response=story_dict['line'].format(celeb=name, user=user, message=message, link=link)
     
     return response
+
+
+def getResponseMention(user, stories_dict):
+    
+    story_dict=getRandomStoryDict(stories_dict)
+    story=story_dict['story']
+
+    link=story['link'][0]['$text']
+    line="@{user} This is worth your attention: {message} {link}" 
+    length=getLength(line=line, user=user)
+    k=randint(0,3)
+    message=getSentences(story)[k]
+    message=trimMessage(message, length)
+    response=line.format( user=user, message=message, link=link)
+    
+    return response
+
 
 
 def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()):
@@ -190,8 +267,7 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
         return params
           
    
-    topic_list=['358046323','173814508','156490415','1008','1060','1049','1025','1052','1136','1129',
-                                        '1024','1007','1004','1056']
+    topic_list=getTopicDict().keys()
     
     params_dict={}
     for topic in topic_list:
@@ -208,26 +284,8 @@ def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()
                         for topic in story_dict_json 
                             if story_dict_json[topic]['list'].has_key('story')}
         
-    
-        
-        
-        
-         #358046323, #Color Decoded: Stories That Span The Spectrum
-          #173814508,#The Race Card Project: Six-Word Essays
-          #156490415,#Joe's Big Idea
-          #1008,#Arts & Life
-          #1060,#Commentary
-          #1049,#Digital Life
-          #1025,#Environment
-          #1052,#Games & Humor
-          #1136,#History
-          #1129,#Humans
-          #1024,#Research News
-          #1007,#Science
-          #1004,#World
-          #1056, #World Story of the Day
-
     return story_dict
+
 
 
 
@@ -409,11 +467,11 @@ if __name__ == "__main__":
     
     user_ids={'date':user_date, 'id_list':user_id_list}
       
-    SEARCH_LIM=5  #const
+    SEARCH_LIM=10  #const
     SLEEP_INT_RESP=60*5 #const - break between posting the interference tweets
     SLEEP_INT_MENT=60 #const - break between responses to mentions
     
-    search_lim=SEARCH_LIM
+    search_lim=100 #SEARCH_LIM
     
     sleep_int=60 #system sleep time
     
@@ -446,7 +504,7 @@ if __name__ == "__main__":
                 user_ids['date']=datetime.utcnow()
                 user_ids['id_list']=[] #not really functional because not being refreshed in the file, need to change later
            
-            if (datetime.utcnow()-npr_query_time).days>=1:
+            if (datetime.utcnow()-npr_query_time).seconds>=6*60*60:
                 stories=getNPRStories()
                 npr_query_time=datetime.utcnow()
                 write_status(last_tweet, first_tweet,last_status,user_ids['date'], npr_query_time)   
@@ -560,7 +618,7 @@ if __name__ == "__main__":
                                                 try: 
                                                     print e
                                                     print 'something wrong with the onion'
-                                                    reply=getResponse2('world', speaker , stories)
+                                                    reply=getResponseMention(speaker , stories)
                                                     print "[+] Replying " , reply
                                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                                 except exceptions.BaseException, e:
@@ -626,7 +684,7 @@ if __name__ == "__main__":
                                             try: 
                                                 print e
                                                 print 'something wrong with the onion'
-                                                reply=getResponse2('world', speaker , stories)
+                                                reply=getResponseMention(speaker , stories)
                                                 print "[+] Replying " , reply
                                                 make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                             except exceptions.BaseException, e:
