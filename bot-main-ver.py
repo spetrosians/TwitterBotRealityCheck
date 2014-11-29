@@ -503,12 +503,12 @@ def respondToTweet(mention, name, last_tweet,stories): #name=id_list_str[last_tw
         message = mention['text']
         speaker = mention['user']['screen_name']
         #_id=mention['id']
-        _id=int(last_tweet)
+        _id=last_tweet
         print "[+] " + speaker + " is saying " + message
         reply=getResponse2(name, speaker , stories)
         print "[+] Replying " , reply
         #_id=532812179049676800 #would need to comment out once we have a real message
-        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id_str=_id)
       
 
 def searchLimInit(system_array):
