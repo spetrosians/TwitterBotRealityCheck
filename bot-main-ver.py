@@ -532,7 +532,7 @@ if __name__ == "__main__":
     SLEEP_INT_RESP=60*5 #const - break between posting the interference tweets
     SLEEP_INT_MENT=60 #const - break between responses to mentions
     
-    search_lim=searchLimitInit(sys.argv) #SEARCH_LIM
+    search_lim=searchLimInit(sys.argv) #SEARCH_LIM
     
     sleep_int=60 #system sleep time
     
