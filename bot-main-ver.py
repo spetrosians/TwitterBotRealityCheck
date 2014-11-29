@@ -58,6 +58,9 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
         elif e.e.code == 404:
             print >> sys.stderr, 'Encountered 404 Error (Not Found)'
             return None
+        elif e.e.code == 403:
+            print >> sys.stderr, 'Encountered 403 Error (probably not authorized to see that status)'
+            return None
         elif e.e.code == 429: 
             print >> sys.stderr, 'Encountered 429 Error (Rate Limit Exceeded)'
             if sleep_when_rate_limited:
@@ -456,8 +459,66 @@ def write_status(last_tweet, first_tweet,last_status, user_date, npr_query_time)
             f.write(user_date.strftime('user_date %x %X\n'))
             f.write(npr_query_time.strftime('npr_date %x %X\n')) 
             
-                    
+            
+def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
+        mentions.reverse()
+        theonion=make_twitter_request(bot.users.lookup, user_id=14075928)
+                                
+        for mention in mentions: 
+         #  print mention['id'], last_status, time.ctime(), 'mentions1'
+                if mention['id'] > int(last_status) and mention['user']['id']!=bot_id: #does not respond to itself
+                        print 'current mention_id ',mention['id']
+                        message = mention['text'].replace(bot_name, '')
+                        speaker = mention['user']['screen_name']
+                        _id = mention['id']
+                        #speaker_id = str(mention['id'])
+                        print "[+] " + speaker + " is saying " + message
+                        #reply=getResponse2('', 'color_blind_if' , stories) 
+                                            
+                        try:
+                            reply='@'+speaker+' @TheOnion '+theonion[0]['status']['text']
+                            onion_image=''
+                            if theonion[0]['status'].has_key('media_url'):
+                                    onion_image=theonion[0]['status']['media_url']
+                            print "[+] Replying with the onion"
+                            make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id, media_url=onion_image)
+                                                    
+                        except exceptions.BaseException, e:                                  
+                                try: 
+                                    print e
+                                    print 'something wrong with the onion'
+                                    reply=getResponseMention(speaker , stories)
+                                    print "[+] Replying " , reply
+                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                except exceptions.BaseException, e:
+                                    try:
+                                        reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
+                                        print "[+] Replying " , reply
+                                        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+                                    except:
+                                        pass
+                                
 
+def respondToTweet(mention, name, last_tweet,stories): #name=id_list_str[last_tweet]
+        message = mention['text']
+        speaker = mention['user']['screen_name']
+        #_id=mention['id']
+        _id=int(last_tweet)
+        print "[+] " + speaker + " is saying " + message
+        reply=getResponse2(name, speaker , stories)
+        print "[+] Replying " , reply
+        #_id=532812179049676800 #would need to comment out once we have a real message
+        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+      
+
+def searchLimInit(system_array):
+        if len(system_array)!=2:
+            return 10
+        elif len(system_array)==2:
+            return int(system_array[1])                      
+
+            
+                    
 if __name__ == "__main__":
 
     
@@ -471,7 +532,7 @@ if __name__ == "__main__":
     SLEEP_INT_RESP=60*5 #const - break between posting the interference tweets
     SLEEP_INT_MENT=60 #const - break between responses to mentions
     
-    search_lim=100 #SEARCH_LIM
+    search_lim=searchLimitInit(sys.argv) #SEARCH_LIM
     
     sleep_int=60 #system sleep time
     
@@ -504,7 +565,7 @@ if __name__ == "__main__":
                 user_ids['date']=datetime.utcnow()
                 user_ids['id_list']=[] #not really functional because not being refreshed in the file, need to change later
            
-            if (datetime.utcnow()-npr_query_time).seconds>=6*60*60:
+            if (datetime.utcnow()-npr_query_time).seconds>=6*60*60: #check for new every 6 hours
                 stories=getNPRStories()
                 npr_query_time=datetime.utcnow()
                 write_status(last_tweet, first_tweet,last_status,user_ids['date'], npr_query_time)   
@@ -533,172 +594,53 @@ if __name__ == "__main__":
                         else:
                             search_lim+=SEARCH_LIM   #if it doesn't, increment the search by 10
             
-
-        
-
-            if len(to_respond)!=0: #possible error lurking
-                            last_tweet=to_respond.pop()
-                            print last_tweet,'to respond',to_respond
+            if  (datetime.utcnow()-break_int_mention).seconds>SLEEP_INT_MENT:
+                        break_int_mention=datetime.utcnow()
+                        status = make_twitter_request(bot.statuses.user_timeline)
+                        
+                        if len(status) > 0:
+                            last_status = status[0]['id_str']
+                            print 'last_id', last_status 
                             
-                            status = make_twitter_request(bot.statuses.user_timeline)
-                            if len(status) > 0:
-                                last_status = status[0]['id_str']
-                                print 'last_id', last_status    
+                        if last_status!='0':
+                                mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=int(last_status))
+                        else:
+                                mentions = make_twitter_request(bot.statuses.mentions_timeline)
+            
+                        if not mentions:
+                                print "No one talking to us now...", time.ctime()
+                                
+                        else:
+                                respondToMentions(mentions, last_status, bot_id, bot_name, stories)
                             
                             
                             # reply to one of the users pulled out from DB
                         #======================================================== 
-                            mention=make_twitter_request(bot.statuses.show,_id=int(last_tweet))
+                            
+            if (datetime.utcnow()-break_int_resp).seconds>SLEEP_INT_RESP and len(to_respond)!=0:
+                    break_int_resp= datetime.utcnow()
+                    last_tweet=to_respond.pop()
+                    print last_tweet,'to respond',to_respond
+                    mention=make_twitter_request(bot.statuses.show,_id=int(last_tweet))
+                    tweet_list.append(last_tweet)
+                    write_tweet(last_tweet)     #all the tweets from the users to whome we have already
+                                            #responded in the past month are recorded...
+                    
+                    if mention!=None:
+                        if mention['user']['id_str'] not in user_ids['id_list']: #check if the user has been responded to in the past 30 days
+                            user_ids['id_list'].append(mention['user']['id_str'])
+                            write_responded_id(mention['user']['id_str'])
+                            name=id_list_str[last_tweet] #get celebrity name
+                            respondToTweet(mention, name, last_tweet,stories)
+                        else:
+                            print 'this user has already been responded to'
+                            #break_int_resp=datetime.utcnow()-timedelta(seconds=61)
 
-                            if mention!=None:
-                                if mention['user']['id_str'] in user_ids['id_list']: #check if the user has been responded to in the past 30 days
-                                            #tweet_list.append(last_tweet)
-                                            #sleep_int=15
-                                            print time.ctime()
-                     
-                                elif (datetime.utcnow()-break_int_resp).seconds>SLEEP_INT_RESP:
-                                    break_int_resp= datetime.utcnow()      
-                                    
-                                    user_ids['id_list'].append(mention['user']['id_str'])
-                                    write_responded_id(mention['user']['id_str'])
-                                    
-                                    message = mention['text']
-                                    speaker = mention['user']['screen_name']
-                                    #_id=mention['id']
-                                    _id=int(last_tweet)
-                                    print "[+] " + speaker + " is saying " + message
-                                    reply=getResponse2(id_list_str[last_tweet], speaker , stories)
-                                    print "[+] Replying " , reply
-                                    #_id=532812179049676800 #would need to comment out once we have a real message
-                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                                    tweet_list.append(last_tweet)
-                                    write_tweet(last_tweet)
-                                    print time.ctime(), 'appending the tweet', mention['text'], last_tweet, tweet_list
-                                else:
-                                    to_respond.append(last_tweet)
-                                    print 'to respond',to_respond
-                            #===================================                 
-                            #then respond to all the mentions (based on the last reply)
-                            #===========================================
-                            if  (datetime.utcnow()-break_int_mention).seconds>SLEEP_INT_MENT:
-                                break_int_mention=datetime.utcnow()
-                                if last_status!='0':
-                                    mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=int(last_status))
-                                else:
-                                    mentions = make_twitter_request(bot.statuses.mentions_timeline)
-            
-                                if not mentions:
-                                    print "No one talking to us now...", time.ctime()
-                                
-                                else:
-                                
-                                    mentions.reverse()
-                                    theonion=make_twitter_request(bot.users.lookup, user_id=14075928)
-                                
-                                    for mention in mentions: 
-                                    #  print mention['id'], last_status, time.ctime(), 'mentions1'
-                                        if mention['id'] > int(last_status) and mention['user']['id']!=bot_id: #does not respond to itself
-                                            print 'current mention_id ',mention['id']
-                                            message = mention['text'].replace(bot_name, '')
-                                            speaker = mention['user']['screen_name']
-                                            _id = mention['id']
-                                            #speaker_id = str(mention['id'])
-                                            print "[+] " + speaker + " is saying " + message
-                                            #reply=getResponse2('', 'color_blind_if' , stories) 
-                                            
-                                            try:
-                                                reply='@'+speaker+' @TheOnion '+theonion[0]['status']['text']
-                                                onion_image=''
-                                                if theonion[0]['status'].has_key('media_url'):
-                                                    onion_image=theonion[0]['status']['media_url']
-                                                print "[+] Replying with the onion"
-                                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id, media_url=onion_image)
-                                                    
-                                            except exceptions.BaseException, e:                                  
-                                                try: 
-                                                    print e
-                                                    print 'something wrong with the onion'
-                                                    reply=getResponseMention(speaker , stories)
-                                                    print "[+] Replying " , reply
-                                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                                                except exceptions.BaseException, e:
-                                                    try:
-                                                        reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
-                                                        print "[+] Replying " , reply
-                                                        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                                                    except:
-                                                        pass
-                                
                                
                                                                  
-                            #sleep_int = 60*2#downtime interval in seconds 
-                            "Sleeping...\n"
-                            time.sleep(sleep_int)
-    
-                        
-            elif (datetime.utcnow()-break_int_mention).seconds>SLEEP_INT_MENT:
-                break_int_mention=datetime.utcnow()
-                    
-                status = make_twitter_request(bot.statuses.user_timeline)
-                if len(status) > 0:
-                        last_status = status[0]['id_str']
-                        print 'last_id', last_status  
-                        
-                            #===================================                 
-                            #then respond to all the mentions (based on the last reply)
-                            #===========================================
-                if last_status!='0':
-                        mentions = make_twitter_request(bot.statuses.mentions_timeline, since_id=int(last_status))
-                else:
-                        mentions = make_twitter_request(bot.statuses.mentions_timeline)
-        
-                if not mentions:
-                        print "No one talking to us now...", time.ctime()
-                        
-                #mentions=[mentions[(len(mentions)-i-1)] for i in xrange(len(mentions))] #reverse the list
-                else:
-                    
-                    mentions.reverse()
-                            
-                    theonion=make_twitter_request(bot.users.lookup, user_id=14075928)
-                            
-                    for mention in mentions: 
-                            print mention['id'], last_status, time.ctime(), 'mentions2'
-                            if mention['id'] > int(last_status) and mention['user']['id']!=bot_id: #does not respond to itself
-                                    print 'current mention_id ',mention['id']
-                                    message = mention['text'].replace(bot_name, '')
-                                    speaker = mention['user']['screen_name']
-                                    _id = mention['id']
-                                    #speaker_id = str(mention['id'])
-                                    print "[+] " + speaker + " is saying " + message
-                                    #reply=getResponse2('', 'color_blind_if' , stories) 
-                                    try:
-                                            reply='@'+speaker+' @TheOnion '+theonion[0]['status']['text']
-                                            onion_image=''
-                                            if theonion[0]['status'].has_key('media_url'):
-                                                onion_image=theonion[0]['status']['media_url']
-                                            print "[+] Replying with the onion"
-                                            make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id, media_url=onion_image)
-                                                    
-                                    except exceptions.BaseException, e:                                   
-                                            try: 
-                                                print e
-                                                print 'something wrong with the onion'
-                                                reply=getResponseMention(speaker , stories)
-                                                print "[+] Replying " , reply
-                                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                                            except exceptions.BaseException, e:
-                                                try:
-                                                    reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
-                                                    print "[+] Replying " , reply
-                                                    make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                                                except:
-                                                    pass
-                               
-                                                                 
-                sleep_int = 60#downtime interval in seconds
-                print "Sleeping...\n"
-                time.sleep(sleep_int)
+            sleep_int = 60#downtime interval in seconds
+            print "Sleeping...\n"
+            time.sleep(sleep_int)
                         
                         
             write_status(last_tweet, first_tweet,last_status,user_date, npr_query_time)            
@@ -718,3 +660,4 @@ if __name__ == "__main__":
                 sleep_int = 60 #downtime interval in seconds
                 print "Sleeping...error\n"
                 time.sleep(sleep_int)
+
