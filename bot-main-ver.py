@@ -253,7 +253,7 @@ def getResponseMention(user, stories_dict):
 
 
 
-def getNPRStories(startDate=date.today()-timedelta(days=7), endDate=date.today()):
+def getNPRStories(startDate=date.today()-timedelta(days=30), endDate=date.today()):
     url_line='http://api.npr.org/query'
     def getParamDict():
         params = {'meta':'none',
