@@ -58,9 +58,6 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
         elif e.e.code == 404:
             print >> sys.stderr, 'Encountered 404 Error (Not Found)'
             return None
-        elif e.e.code == 403:
-            print >> sys.stderr, 'Encountered 403 Error (probably not authorized to see that status)'
-            return None
         elif e.e.code == 429: 
             print >> sys.stderr, 'Encountered 429 Error (Rate Limit Exceeded)'
             if sleep_when_rate_limited:
@@ -110,7 +107,7 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
 
 def getSentences(story):
         paragraphs=story['text']['paragraph']
-        text_list=[p['$text'] for p in paragraphs]
+        text_list=[p['$text'].encode("ascii", "ignore") for p in paragraphs]
         text='\n'.join(text_list)
         blob=TextBlob(text)
         most_colored=[(s.polarity, s.subjectivity, s.raw) for s in blob.sentences]
@@ -456,7 +453,7 @@ def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
                         speaker = mention['user']['screen_name']
                         _id = mention['id']
                         #speaker_id = str(mention['id'])
-                        print "[+] " + speaker + " is saying " + message
+                        print "[+] ", speaker, " is saying ", message
                         #reply=getResponse2('', 'color_blind_if' , stories) 
                                             
                         try:
@@ -465,34 +462,41 @@ def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
                             if theonion[0]['status'].has_key('media_url'):
                                     onion_image=theonion[0]['status']['media_url']
                             print "[+] Replying with the onion"
-                            bot.statuses.update(status=reply,in_reply_to_status_id=_id, media_url=onion_image)
+                            make_twitter_request(bot.statuses.update,status=reply,in_reply_to_status_id=_id, media_url=onion_image)
                            
-                        except exceptions.BaseException, e:                                  
+                        except exceptions.BaseException, e:       
+                                print e     
+                                print "mentions"                       
                                 try: 
-                                    print e
                                     print 'something wrong with the onion'
                                     reply=getResponseMention(speaker , stories)
                                     print "[+] Replying " , reply
                                     make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                 except exceptions.BaseException, e:
+                                    print e 
                                     try:
                                         reply='@'+speaker+' I am not in the mood to talk. Go read a book.'
                                         print "[+] Replying " , reply
                                         make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                     except:
-                                        pass
+                                        print e 
                                 
 
 def respondToTweet(mention, name, last_tweet,stories): #name=id_list_str[last_tweet]
-        message = mention['text']
-        speaker = mention['user']['screen_name']
-        #_id=mention['id']
-        _id=int(last_tweet)
-        print "[+] " + speaker + " is saying " + message
-        reply=getResponse2(name, speaker , stories)
-        print "[+] Replying " , reply
-        #_id=532812179049676800 #would need to comment out once we have a real message
-        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+        try:
+            message = mention['text']
+            speaker = mention['user']['screen_name']
+            #_id=mention['id']
+            _id=int(last_tweet)
+            print "[+] ", speaker, " is saying ", message
+            reply=getResponse2(name, speaker , stories)
+            print "[+] Replying " , reply
+            #_id=532812179049676800 #would need to comment out once we have a real message
+        
+            make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
+        except exceptions.BaseException, e:
+            print 'responses'
+            print e   
       
 
 def searchLimInit(system_array):
