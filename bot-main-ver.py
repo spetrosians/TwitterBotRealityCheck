@@ -456,7 +456,7 @@ def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
                         print 'current mention_id ',mention['id']
                         message = mention['text'].replace(bot_name, '')
                         speaker = mention['user']['screen_name']
-                        _id = mention['id']
+                        id_str = mention['id_str']
                         #speaker_id = str(mention['id'])
                         print "[+] " + speaker + " is saying " + message
                         #reply=getResponse2('', 'color_blind_if' , stories) 
@@ -467,7 +467,9 @@ def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
                             if theonion[0]['status'].has_key('media_url'):
                                     onion_image=theonion[0]['status']['media_url']
                             print "[+] Replying with the onion"
-                            make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id, media_url=onion_image)
+                            result=make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id_str=id_str, media_url=onion_image)
+                            if result==None:
+                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id_str=id_str)
                                                     
                         except exceptions.BaseException, e:                                  
                                 try: 
