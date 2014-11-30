@@ -299,8 +299,7 @@ def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
     to_respond={tweet['id_str']:name for tweet in results 
                                         for r,name in zip(re_names,name_list) if re.search(r, tweet['text'])}
      
-    print to_respond                                   
-                                        
+
     return to_respond    
 
 def getQuery(name_list, word_list):
@@ -540,8 +539,8 @@ if __name__ == "__main__":
 
     
     
-    print 'tweet_list', tweet_list
-    print user_ids['date'], user_ids['id_list']
+    print 'tweet_list', len(tweet_list)
+    print 'user date',len(user_ids['date']),'user list', len(user_ids['id_list'])
     
     to_respond=[] #list of tweet ids to respond to
     
