@@ -108,9 +108,6 @@ def make_twitter_request(twitter_api_func, max_errors=10, *args, **kw):
                 print >> sys.stderr, "Too many consecutive errors...bailing out."
                 raise
 
-
-
-
 def getSentences(story):
         paragraphs=story['text']['paragraph']
         text_list=[p['$text'] for p in paragraphs]
@@ -122,8 +119,6 @@ def getSentences(story):
            min(most_colored, key=lambda x: x[1])[2].replace('.',''),
            max(most_colored, key=lambda x: x[1])[2].replace('.','')]
         return sents
-
-    
 
 def nameToUpper(name):
     name=name.split(' ')
@@ -209,10 +204,7 @@ def getRandomStoryDict(stories_dict):
                 }
     
     return story_dict
-
-
-
-    
+	
 def getResponse2(name, user, stories_dict):
     
     name=nameToUpper(name)
@@ -290,9 +282,6 @@ def getNPRStories(startDate=date.today()-timedelta(days=30), endDate=date.today(
         
     return story_dict
 
-
-
-
 # Connection to Mongo DB
 def connectMongo():
     try:
@@ -301,11 +290,7 @@ def connectMongo():
     except pymongo.errors.ConnectionFailure, e:
        print "Could not connect to MongoDB: %s" % e 
     return conn
-
-
-    
-    
-    
+	
 def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
     print limit
     
