@@ -298,9 +298,7 @@ def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
                                             for name in name_list]
     
     results=list(conn.find(getQuery(name_list, celeb_word_list)).limit(limit))
-    print 'results',results
-    print 're_names', re_names
-    
+
     to_respond={tweet['id_str']:name for tweet in results 
                                         for r,name in zip(re_names,name_list) if re.search(r, tweet['text'])}
      
@@ -456,7 +454,7 @@ def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
                         print 'current mention_id ',mention['id']
                         message = mention['text'].replace(bot_name, '')
                         speaker = mention['user']['screen_name']
-                        id_str = mention['id_str']
+                        _id = mention['id']
                         #speaker_id = str(mention['id'])
                         print "[+] " + speaker + " is saying " + message
                         #reply=getResponse2('', 'color_blind_if' , stories) 
@@ -467,9 +465,10 @@ def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
                             if theonion[0]['status'].has_key('media_url'):
                                     onion_image=theonion[0]['status']['media_url']
                             print "[+] Replying with the onion"
-                            result=make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id_str=id_str, media_url=onion_image)
+                            result=make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id, media_url=onion_image)
                             if result==None:
-                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id_str=id_str)
+                                print "no result....((("
+                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
                                                     
                         except exceptions.BaseException, e:                                  
                                 try: 
@@ -491,12 +490,12 @@ def respondToTweet(mention, name, last_tweet,stories): #name=id_list_str[last_tw
         message = mention['text']
         speaker = mention['user']['screen_name']
         #_id=mention['id']
-        _id=last_tweet
+        _id=int(last_tweet)
         print "[+] " + speaker + " is saying " + message
         reply=getResponse2(name, speaker , stories)
         print "[+] Replying " , reply
         #_id=532812179049676800 #would need to comment out once we have a real message
-        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id_str=_id)
+        make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
       
 
 def searchLimInit(system_array):
@@ -565,7 +564,6 @@ if __name__ == "__main__":
             if len(to_respond)==0:
                 print 'searching for tweets'
                 id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=search_lim)
-                print id_list_str
                 print 'getting rid of the tweets we already responded to', time.ctime()
                 id_list_str={tweet_id:id_list_str[tweet_id] for tweet_id in id_list_str if tweet_id not in tweet_list}
                                     
