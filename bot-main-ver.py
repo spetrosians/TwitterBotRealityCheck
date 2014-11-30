@@ -139,9 +139,10 @@ def nameToUpper(name):
     
 def trimMessage(message, length):
         message=message.encode("ascii", "ignore")
-        message=message.split('.')[0]
-        if len(message)>140-length:
-            words=message.split(' ')
+        blob=TextBlob(message)
+        sentence=blob.sentences[0]
+        if len(sentence)>140-length:
+            words=sentence.split(' ')
             message=words[0]
             for w in words[1:]:
                 if len(message+' '+w)<=140-length:
