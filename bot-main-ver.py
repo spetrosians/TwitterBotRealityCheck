@@ -465,11 +465,8 @@ def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
                             if theonion[0]['status'].has_key('media_url'):
                                     onion_image=theonion[0]['status']['media_url']
                             print "[+] Replying with the onion"
-                            result=make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id, media_url=onion_image)
-                            if result==None:
-                                print "no result....((("
-                                make_twitter_request(bot.statuses.update, status=reply,in_reply_to_status_id=_id)
-                                                    
+                            bot.statuses.update(status=reply,in_reply_to_status_id=_id, media_url=onion_image)
+                           
                         except exceptions.BaseException, e:                                  
                                 try: 
                                     print e
