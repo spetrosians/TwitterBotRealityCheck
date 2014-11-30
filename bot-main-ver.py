@@ -452,7 +452,7 @@ def respondToMentions(mentions, last_status, bot_id, bot_name, stories):
                         speaker = mention['user']['screen_name']
                         _id = mention['id']
                         #speaker_id = str(mention['id'])
-                        print "[+] ", speaker, " is saying ", message
+                        print "[+] ", speaker, " is saying ", message.encode("ascii", "ignore")
                         #reply=getResponse2('', 'color_blind_if' , stories) 
                                             
                         try:
@@ -487,7 +487,7 @@ def respondToTweet(mention, name, last_tweet,stories): #name=id_list_str[last_tw
             speaker = mention['user']['screen_name']
             #_id=mention['id']
             _id=int(last_tweet)
-            print "[+] ", speaker, " is saying ", message
+            print "[+] ", speaker, " is saying ", message.encode("ascii", "ignore")
             reply=getResponse2(name, speaker , stories)
             print "[+] Replying " , reply
             #_id=532812179049676800 #would need to comment out once we have a real message
