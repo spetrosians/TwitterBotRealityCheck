@@ -540,7 +540,7 @@ if __name__ == "__main__":
     
     
     print 'tweet_list', len(tweet_list)
-    print 'user date',len(user_ids['date']),'user list', len(user_ids['id_list'])
+    print 'user date',user_ids['date'],'user list', len(user_ids['id_list']), 'npr date',npr_query_time
     
     to_respond=[] #list of tweet ids to respond to
     
@@ -636,7 +636,7 @@ if __name__ == "__main__":
             
         except KeyboardInterrupt:
                 print"[!] Cleaning up. last_id was ", last_tweet       
-                print tweet_list        
+                print 'tweet_list', len(tweet_list)        
                 write_status(last_tweet, first_tweet,last_status,user_ids['date'], npr_query_time)
                 write_tweet_list_pkl(tweet_list) #just in case, probably will delete it later           
                 sys.exit()
