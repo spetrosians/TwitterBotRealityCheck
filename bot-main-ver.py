@@ -572,10 +572,13 @@ if __name__ == "__main__":
                  
                 else:                               #otherwise, get a respond list
                     to_respond=id_list_str.keys()
-                    if len(tweet_list)>0:           # and see if mongoDB has new entries
-                        max_last_tweet=str(max([int(t) for t in tweet_list]))
-                        max_last_new_tweet=str(max([int(t) for t in to_respond]))
-                        if int(max_last_new_tweet)>int(max_last_tweet): #if it does, roll back to searching 10 tweets per search
+                    if len(tweet_list)>0: # and see if mongoDB has new entries
+                        print len(tweet_list)
+                        max_last_tweet=max([int(t) for t in tweet_list])
+                        print 'max responded tweet',max_last_tweet
+                        max_last_new_tweet=max([int(t) for t in to_respond])
+                        print 'max searched tweet', max_last_new_tweet
+                        if max_last_new_tweet>max_last_tweet: #if it does, roll back to searching 10 tweets per search
                             search_lim=SEARCH_LIM
                         else:
                             search_lim+=SEARCH_LIM   #if it doesn't, increment the search by 10
