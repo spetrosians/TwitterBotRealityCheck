@@ -14,6 +14,8 @@ from random import randint
 import pickle as pkl
 from textblob import TextBlob
 import nltk
+from bson.objectid import ObjectId
+
 
 from twitter.api import Twitter, TwitterError
 from twitter.oauth import OAuth, write_token_file , read_token_file
@@ -303,9 +305,11 @@ def get_id_str_list(name_list, celeb_word_list, conn, limit=10):
     return to_respond    
 
 def getQuery(name_list, word_list):
+    
     query={'$and': [{'$or': []} ,
-                     {'$nor':[]} 
-                    ]}
+                     {'$nor':[]},
+                     {"_id": {"$gte":getRecentObjId()}} ]
+                    }
        
     for name in name_list:
         regex_list=getRegex(name, word_list[name])
@@ -313,6 +317,15 @@ def getQuery(name_list, word_list):
         query['$and'][1]['$nor'].extend([{'text':r } for r in regex_list[1]])
     
     return query  
+    
+    
+def getRecentObjId(days=2): # from now for the last 7 days
+    gen_time = datetime.utcnow() - timedelta(days=days)  #tho no clue if the server is using utc or local time
+    _id = ObjectId.from_datetime(gen_time)
+    return _id
+    
+        
+
 
 def splitName(name):
     name=name.split(' ')
@@ -567,21 +580,15 @@ if __name__ == "__main__":
                 print 'getting rid of the tweets we already responded to', time.ctime()
                 id_list_str={tweet_id:id_list_str[tweet_id] for tweet_id in id_list_str if tweet_id not in tweet_list}
                                     
-                if len(id_list_str)==0:  #everything was a repeat
+                if len(id_list_str)<=15:  #everything was a repeat
                         search_lim+=SEARCH_LIM                  
                  
                 else:                               #otherwise, get a respond list
+                    search_lim=SEARCH_LIM 
+                
+                if len(id_list_str)==0:
                     to_respond=id_list_str.keys()
-                    if len(tweet_list)>0: # and see if mongoDB has new entries
-                        print len(tweet_list)
-                        max_last_tweet=max([int(t) for t in tweet_list])
-                        print 'max responded tweet',max_last_tweet
-                        max_last_new_tweet=max([int(t) for t in to_respond])
-                        print 'max searched tweet', max_last_new_tweet
-                        if max_last_new_tweet>max_last_tweet: #if it does, roll back to searching 10 tweets per search
-                            search_lim=SEARCH_LIM
-                        else:
-                            search_lim+=SEARCH_LIM   #if it doesn't, increment the search by 10
+
             
             if  (datetime.utcnow()-break_int_mention).seconds>SLEEP_INT_MENT:
                         break_int_mention=datetime.utcnow()
