@@ -500,7 +500,7 @@ def respondToTweet(mention, name, last_tweet,stories): #name=id_list_str[last_tw
 
 def searchLimInit(system_array):
         if len(system_array)!=2:
-            return 930
+            return 10
         elif len(system_array)==2:
             return int(system_array[1])                      
 
@@ -566,12 +566,22 @@ if __name__ == "__main__":
                 id_list_str=get_id_str_list(name_list,celeb_word_list, conn, limit=search_lim)
                 print 'getting rid of the tweets we already responded to', time.ctime()
                 id_list_str={tweet_id:id_list_str[tweet_id] for tweet_id in id_list_str if tweet_id not in tweet_list}
-                   
-                search_lim+=SEARCH_LIM
-                                 
-                if len(id_list_str)!=0:       #change later - not searching for freshest tweets
+                                    
+                if len(id_list_str)==0:  #everything was a repeat
+                        search_lim+=SEARCH_LIM                  
+                 
+                else:                               #otherwise, get a respond list
                     to_respond=id_list_str.keys()
-                
+                    if len(tweet_list)>0: # and see if mongoDB has new entries
+                        print len(tweet_list)
+                        max_last_tweet=max([int(t) for t in tweet_list])
+                        print 'max responded tweet',max_last_tweet
+                        max_last_new_tweet=max([int(t) for t in to_respond])
+                        print 'max searched tweet', max_last_new_tweet
+                        if max_last_new_tweet>max_last_tweet: #if it does, roll back to searching 10 tweets per search
+                            search_lim=SEARCH_LIM
+                        else:
+                            search_lim+=SEARCH_LIM   #if it doesn't, increment the search by 10
             
             if  (datetime.utcnow()-break_int_mention).seconds>SLEEP_INT_MENT:
                         break_int_mention=datetime.utcnow()
