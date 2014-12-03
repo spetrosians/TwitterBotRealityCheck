@@ -586,7 +586,7 @@ if __name__ == "__main__":
                 else:                               #otherwise, get a respond list
                     search_lim=SEARCH_LIM 
                 
-            if len(id_list_str)==0:
+            if len(id_list_str)>0:
                 to_respond=id_list_str.keys()
 
             
